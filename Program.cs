@@ -232,6 +232,11 @@ namespace ButlerCore
                     DashboardUtils.DashboardFile(2024),
                     "easiest",
                     md);
+                //  4.  Inject Rankings  //////////////////////////////////////////////////////
+                var nrlRanks = ts.InjectRankings("NRL", "nrl-ranks", mi);
+                LogMessage(settings.Logger, nrlRanks);
+                var aflRanks = ts.InjectRankings("AFL", "afl-ranks", mi);
+                LogMessage(settings.Logger, aflRanks);
                 return 0;
             }
             catch (Exception ex)
