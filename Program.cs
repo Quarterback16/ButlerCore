@@ -163,8 +163,16 @@ namespace ButlerCore
         private static Option<ButlerCoreContext> DumpSettings(
             ButlerCoreContext context)
         {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (version != null)
+            {
+                DateTime buildDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Unspecified)
+                    .AddDays(version.Build)
+                    .AddSeconds(version.Revision * 2);
+                LogSettingMessage(context.Logger, "Build        ", buildDate.ToString("yyyy-MM-dd"));
+            }
+
             var startDate = context.StartDateTime?.ToString("yyyy'-'MM'-'dd' 'hh':'mm");
-            LogStartupMessage(context.Logger, startDate);
 
             LogSettingMessage(context.Logger, "Starting", startDate);
             WriteSettings(context.Logger, "AppNames  ", context.AppNames);
@@ -216,7 +224,12 @@ namespace ButlerCore
                 //  1. Update Results   /////////////////////////////////////////////////////////
                 var newState = ts.GetNewTippingState(
                     DateTime.Now.AddDays(1));
-                LogMessage(settings.Logger, $"{newState.Count} results in file");
+                LogMessage(settings.Logger, $"{ts.NewResults.Count} new results added");
+                ts.NewResults.ForEach(
+                    nr =>
+                    {
+                        LogMessage(settings.Logger, nr.ToString());
+                    });
                 ts.WriteMatchEventJson(newState, settings.ResultsFile);
                 //  2. Inject the Tips   ////////////////////////////////////////////////////////
                 var mi = new MarkdownInjector(
