@@ -216,8 +216,6 @@ namespace ButlerCore
                 LogMessage(
                     settings.Logger,
                     msg);
-                if (IsWeekend())
-                    return 0;
 
                 var ts = new TipItService.TipItService(
                     settings.DropBoxFolder);
@@ -231,13 +229,17 @@ namespace ButlerCore
                         LogMessage(settings.Logger, nr.ToString());
                     });
                 ts.WriteMatchEventJson(newState, settings.ResultsFile);
+
                 //  2. Inject the Tips   ////////////////////////////////////////////////////////
                 var mi = new MarkdownInjector(
                     $"{settings.DropBoxFolder}obsidian//ChestOfNotes//");
-                LogMessage(settings.Logger, $"Injecting into NRL");
-                ts.Inject("NRL", "nrl-tips", mi);
-                LogMessage(settings.Logger, $"Injecting into AFL");
-                ts.Inject("AFL", "afl-tips", mi);
+                if (!IsWeekend())
+                {
+                    LogMessage(settings.Logger, $"Injecting into NRL");
+                    ts.Inject("NRL", "nrl-tips", mi);
+                    LogMessage(settings.Logger, $"Injecting into AFL");
+                    ts.Inject("AFL", "afl-tips", mi);
+                }
                 //  3.  Inject Easy Tips  //////////////////////////////////////////////////////
                 LogMessage(settings.Logger, $"Injecting easiest into {DashboardUtils.DashboardFile(2024)}");
                 var md = ts.Easiest();
@@ -245,11 +247,15 @@ namespace ButlerCore
                     DashboardUtils.DashboardFile(2024),
                     "easiest",
                     md);
+
                 //  4.  Inject Rankings  //////////////////////////////////////////////////////
-                var nrlRanks = ts.InjectRankings("NRL", "nrl-ranks", mi);
-                LogMessage(settings.Logger, nrlRanks);
-                var aflRanks = ts.InjectRankings("AFL", "afl-ranks", mi);
-                LogMessage(settings.Logger, aflRanks);
+                if (!IsWeekend())
+                {
+                    var nrlRanks = ts.InjectRankings("NRL", "nrl-ranks", mi);
+                    LogMessage(settings.Logger, nrlRanks);
+                    var aflRanks = ts.InjectRankings("AFL", "afl-ranks", mi);
+                    LogMessage(settings.Logger, aflRanks);
+                }
                 return 0;
             }
             catch (Exception ex)
