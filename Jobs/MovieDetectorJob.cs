@@ -16,6 +16,14 @@ namespace ButlerCore.Jobs
 
         public int DoJob()
         {
+            var list = GetMovieList();
+            foreach (var movie in list) 
+            {
+                if (IsMarkdownFor(movie.Title))
+                    continue;
+
+                WriteMovieMarkdown(movie);
+            }
             return 0;
         }
 
@@ -52,7 +60,7 @@ namespace ButlerCore.Jobs
                 .AppendLine($"when: {theWhen}")
                 .AppendLine("genre:")
                 .AppendLine("rating:")
-                .AppendLine("Year:")
+                .AppendLine($"Year: {movie.Year}")
                 .AppendLine("Completion:")
                 .AppendLine("Keeper:")
                 .AppendLine("How:")
@@ -102,7 +110,7 @@ namespace ButlerCore.Jobs
             return result;
         }
 
-        private string MarkdownFile(
+        public string MarkdownFile(
             string movieTitle)
         {
             return $"{_movieMarkdownFolder}{movieTitle}.md";
