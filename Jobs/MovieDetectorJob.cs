@@ -1,5 +1,4 @@
 ﻿using ButlerCore.Models;
-using LanguageExt.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -114,6 +113,88 @@ namespace ButlerCore.Jobs
             string movieTitle)
         {
             return $"{_movieMarkdownFolder}{movieTitle}.md";
+        }
+
+        public string? MovieProperty(
+            string title,
+            string propertyName)
+        {
+            if (IsMarkdownFor(title))
+            {
+                var props = ReadProperties(title);
+                var prop = props.Find(p => p.Name == propertyName);
+
+                return prop == null ? "?" : prop.Value;
+            }
+            else
+            {
+                return "?";
+            }
+        }
+
+        private List<MovieProperty> ReadProperties(string title)
+        {
+            var props = new List<MovieProperty>();
+            var fileName = MarkdownFile(title);
+            string[] lines = File.ReadAllLines(fileName);
+            var startProps = false;
+            foreach (var line in lines)
+            {
+                if (startProps)
+                {
+                    var prop = LineToProp(line);
+                    if (prop.Name != null)
+                    {
+                        props.Add(prop);
+                    }
+                }
+                if (line.StartsWith("---") && !startProps)
+                {
+                    startProps = true;
+                    continue;
+                }
+                if (line.StartsWith("---") && startProps)
+                {
+                    break;
+                }
+            }
+            // add defaults 
+            if (!props.Exists(p => p.Name == "Keeper"))
+                props.Add(new MovieProperty("Keeper", "N"));
+            return props;
+        }
+
+        private MovieProperty LineToProp(string line)
+        {
+            if (line.StartsWith("How:"))
+                return new MovieProperty("How", line.Substring(5));
+            if (line.StartsWith("With:"))
+                return new MovieProperty("With", line.Substring(6));
+            if (line.StartsWith("when:"))
+                return new MovieProperty("when", line.Substring(6));
+            if (line.StartsWith("Year:"))
+                return new MovieProperty("Year", line.Substring(6));
+            if (line.StartsWith("genre:"))
+                return new MovieProperty("genre", line.Substring(7));
+            if (line.StartsWith("author:"))
+                return new MovieProperty("author", line.Substring(8));
+            if (line.StartsWith("rating:"))
+                return new MovieProperty("rating", line.Substring(8));
+            if (line.StartsWith("Keeper:"))
+                return new MovieProperty("Keeper", line.Substring(8));
+            if (line.StartsWith("Priority:"))
+                return new MovieProperty("Priority", line.Substring(9));
+            if (line.StartsWith("Completion:"))
+                return new MovieProperty("Completion", line.Substring(12));
+            return new MovieProperty();
+        }
+
+        public bool IsKeeper(string title)
+        {
+            var props = ReadProperties(title);
+            if (props.Exists(p=>p.Name == "Keeper" && p.Value == "Y"))
+                return true;
+            return false;
         }
     }
 }
