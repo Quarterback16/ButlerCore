@@ -132,7 +132,7 @@ namespace ButlerCore.Jobs
             }
         }
 
-        private List<MovieProperty> ReadProperties(string title)
+        public List<MovieProperty> ReadProperties(string title)
         {
             var props = new List<MovieProperty>();
             var fileName = MarkdownFile(title);
@@ -162,6 +162,41 @@ namespace ButlerCore.Jobs
             if (!props.Exists(p => p.Name == "Keeper"))
                 props.Add(new MovieProperty("Keeper", "N"));
             return props;
+        }
+
+        public List<MovieTag> ReadTags(string title)
+        {
+            var tags = new List<MovieTag>();
+            var fileName = MarkdownFile(title);
+            string[] lines = File.ReadAllLines(fileName);
+            var startTags = false;
+            foreach (var line in lines)
+            {
+                if (startTags)
+                {
+                    var tag = LineToTag(line);
+                    if (tag.Value != null)
+                    {
+                        tags.Add(tag);
+                    }
+                }
+                if (line.StartsWith("tags:") && !startTags)
+                {
+                    startTags = true;
+                    continue;
+                }
+                if (line.StartsWith("---") && startTags)
+                {
+                    break;
+                }
+            }
+            return tags;
+        }
+        private MovieTag LineToTag(string line)
+        {
+            if (line.StartsWith("  - "))
+                return new MovieTag(line.Substring(4));
+            return new MovieTag();
         }
 
         private MovieProperty LineToProp(string line)

@@ -17,5 +17,7 @@
             Value = value;
         }
 
+        public override string ToString() => $"{Name}: {Value}";
+
     }
 }
