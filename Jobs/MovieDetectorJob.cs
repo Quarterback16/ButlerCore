@@ -1,6 +1,8 @@
-﻿using ButlerCore.Models;
+﻿using ButlerCore.Helpers;
+using ButlerCore.Models;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace ButlerCore.Jobs
 {
@@ -22,6 +24,7 @@ namespace ButlerCore.Jobs
                     continue;
 
                 WriteMovieMarkdown(movie);
+                Console.WriteLine($"Markdown created for {movie}");
             }
             return 0;
         }
@@ -136,6 +139,8 @@ namespace ButlerCore.Jobs
         {
             var props = new List<MovieProperty>();
             var fileName = MarkdownFile(title);
+            if (!File.Exists(fileName))
+                return props;  // hasnt been processed yet
             string[] lines = File.ReadAllLines(fileName);
             var startProps = false;
             foreach (var line in lines)
@@ -160,7 +165,7 @@ namespace ButlerCore.Jobs
             }
             // add defaults 
             if (!props.Exists(p => p.Name == "Keeper"))
-                props.Add(new MovieProperty("Keeper", "N"));
+                props.Add(new MovieProperty("Keeper", "Keeper: N"));
             return props;
         }
 
@@ -182,6 +187,18 @@ namespace ButlerCore.Jobs
                 }
                 if (line.StartsWith("tags:") && !startTags)
                 {
+                    if (line.Contains("[") && line.Contains("]"))
+                    {
+                        var tagString = line.Substring(
+                            line.IndexOf("[") + 1, 
+                            line.IndexOf("]") - line.IndexOf("[") - 1);
+                        var tagArray = tagString.Split(',');
+                        foreach (var item in tagArray)
+                        {
+                            tags.Add(new MovieTag(item));
+                        }
+                        break;
+                    }
                     startTags = true;
                     continue;
                 }
@@ -199,28 +216,12 @@ namespace ButlerCore.Jobs
             return new MovieTag();
         }
 
-        private MovieProperty LineToProp(string line)
+        private static MovieProperty LineToProp(string line)
         {
-            if (line.StartsWith("How:"))
-                return new MovieProperty("How", line.Substring(5));
-            if (line.StartsWith("With:"))
-                return new MovieProperty("With", line.Substring(6));
-            if (line.StartsWith("when:"))
-                return new MovieProperty("when", line.Substring(6));
-            if (line.StartsWith("Year:"))
-                return new MovieProperty("Year", line.Substring(6));
-            if (line.StartsWith("genre:"))
-                return new MovieProperty("genre", line.Substring(7));
-            if (line.StartsWith("author:"))
-                return new MovieProperty("author", line.Substring(8));
-            if (line.StartsWith("rating:"))
-                return new MovieProperty("rating", line.Substring(8));
-            if (line.StartsWith("Keeper:"))
-                return new MovieProperty("Keeper", line.Substring(8));
-            if (line.StartsWith("Priority:"))
-                return new MovieProperty("Priority", line.Substring(9));
-            if (line.StartsWith("Completion:"))
-                return new MovieProperty("Completion", line.Substring(12));
+            var kp = MovieHelper.KnownProperties()
+                .Find(kp => !string.IsNullOrEmpty(kp.Name) && line.StartsWith(kp.Name));
+            if (kp != null && !string.IsNullOrEmpty(kp.Name))
+                return new MovieProperty(kp.Name, line);
             return new MovieProperty();
         }
 
@@ -230,6 +231,51 @@ namespace ButlerCore.Jobs
             if (props.Exists(p=>p.Name == "Keeper" && p.Value == "Y"))
                 return true;
             return false;
+        }
+
+        public bool IsKeeper(Movie movie) => IsKeeper(movie.Title);
+
+        public List<Movie> CullList(
+            string movieRootFolder = "m:\\")
+        {
+            var list = new List<Movie>();
+            var fileEntries = Directory.GetDirectories(
+                movieRootFolder,
+                "*.*");
+            foreach (var file in fileEntries)
+            {
+                var fileInfo = new FileInfo(file);
+                var movie = ParseMovie(fileInfo.Name);
+                if (IsKeeper(movie))
+                    continue;
+                if (!Watched(movie))
+                    continue;
+                list.Add(movie);
+            }
+            return list;
+        }
+
+        public bool Watched(Movie movie) =>
+
+            ReadTags(movie.Title)
+                .Exists( t => t.Value == "movie/done");
+
+        public List<Movie> UnprocessedFiles(
+            string movieRootFolder = "m:\\")
+        {
+            var list = new List<Movie>();
+            var fileEntries = Directory.GetDirectories(
+                movieRootFolder,
+                "*.*");
+            foreach (var file in fileEntries)
+            {
+                var fileInfo = new FileInfo(file);
+                var movie = ParseMovie(fileInfo.Name);
+                var props = ReadProperties(movie.Title);
+                if (props.Count == 0)
+                    list.Add(movie);
+            }
+            return list;
         }
     }
 }
