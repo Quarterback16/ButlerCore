@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Configuration;
 using InjectorMicroService;
 using TipItService.Helpers;
+using ButlerCore.Jobs;
 
 namespace ButlerCore
 {
@@ -66,6 +67,7 @@ namespace ButlerCore
             while (DateTime.Now.TimeOfDay < ToTimeOfDay(context.KnockOffTime))
             {
                 var nErrors = TipitJob(context);
+                nErrors += MovieJobs(context);
 
                 if (nErrors > 0)
                 {
@@ -256,6 +258,58 @@ namespace ButlerCore
                     var aflRanks = ts.InjectRankings("AFL", "afl-ranks", mi);
                     LogMessage(settings.Logger, aflRanks);
                 }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                LogMessage(
+                    settings.Logger,
+                    $"Exception {ex.Message}");
+                throw;
+            }
+
+        }
+
+        private static int MovieJobs(
+            ButlerCoreContext settings)
+        {
+            try
+            {
+                if (settings.MovieRootFolder == null)
+                {
+                    LogMessage(settings.Logger, "No Movie Root Folder set");
+                    return 1;
+                }
+                if (settings.DropBoxFolder == null)
+                {
+                    LogMessage(settings.Logger, "No Dropbox Folder set");
+                    return 1;
+                }
+                if (settings.Logger == null)
+                {
+                    Console.WriteLine( "No Logger set");
+                    return 1;
+                }
+
+                var mjm = new MovieJobMaster(
+                    settings.Logger,
+                    settings.DropBoxFolder,
+                    settings.MovieRootFolder);
+
+                //  1. Detector always Detects   /////////////////////////////////////////////////////////
+                mjm.DoDetectorJob();
+
+                //  2. Optionally Cull   ////////////////////////////////////////////////////////
+                var msg = DateTime.Now.Day <= 20
+                    ? "You have til the 21st before we start culling"
+                    : $"Doing the Movie Cull job from {settings.MovieRootFolder}";
+                LogMessage(
+                    settings.Logger,
+                    msg);
+
+                if (DateTime.Now.Day > 20)
+                    mjm.DoCullJob();
+
                 return 0;
             }
             catch (Exception ex)

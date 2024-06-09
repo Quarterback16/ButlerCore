@@ -1,21 +1,31 @@
 ﻿using ButlerCore.Helpers;
 using ButlerCore.Models;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Linq;
 
 namespace ButlerCore.Jobs
 {
-    public class MovieDetectorJob
+    public class MovieJobMaster
     {
         private readonly string _movieMarkdownFolder;
-
-        public MovieDetectorJob()
+        private readonly string _movieRootFolder;
+#if !DEBUG
+        private readonly ILogger _logger;
+#endif
+        public MovieJobMaster(
+            ILogger logger,
+            string dropBoxFolder,
+            string movieRootFolder = "m:\\")
         {
-            _movieMarkdownFolder = "d:\\Dropbox\\Obsidian\\ChestOfNotes\\movies\\";
+            _movieMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\movies\\";
+            _movieRootFolder = movieRootFolder;
+#if !DEBUG
+            _logger = logger;
+#endif
         }
 
-        public int DoJob()
+        public int DoDetectorJob()
         {
             var list = GetMovieList();
             foreach (var movie in list) 
@@ -24,17 +34,38 @@ namespace ButlerCore.Jobs
                     continue;
 
                 WriteMovieMarkdown(movie);
+                LogIt($"Markdown created for {movie}");
                 Console.WriteLine($"Markdown created for {movie}");
             }
             return 0;
         }
 
-        public List<Movie> GetMovieList(
-            string movieRootFolder = "m:\\")
+        public int DoCullJob()
+        {
+            var fileEntries = Directory.GetDirectories(
+                _movieRootFolder,
+                "*.*");
+            foreach (var file in fileEntries)
+            {
+                var fileInfo = new FileInfo(file);
+                var movie = ParseMovie(fileInfo.Name);
+                if (IsKeeper(movie))
+                    continue;
+                if (!Watched(movie))
+                    continue;
+                // remove it
+                FileSystemHelper.DeleteDirectory(
+                    fileInfo.FullName);
+                LogIt($"Deleted {movie}");
+            }
+            return 0;
+        }
+
+        public List<Movie> GetMovieList()
         {
             var list = new List<Movie>();
             var fileEntries = Directory.GetDirectories(
-                movieRootFolder,
+                _movieRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {
@@ -48,11 +79,11 @@ namespace ButlerCore.Jobs
         public bool IsMarkdownFor(
             string moveTitle) 
         {
-            var mdFile = MarkdownFile(moveTitle);
+            var mdFile = MarkdownFileName(moveTitle);
             return File.Exists(mdFile);
         }
 
-        public string? MovieToMarkdown(Movie movie)
+        public static string? MovieToMarkdown(Movie movie)
         {
             var theWhen = DateTime.Now.ToString("yyyy-MM-dd");
             var sb = new StringBuilder()
@@ -65,7 +96,7 @@ namespace ButlerCore.Jobs
                 .AppendLine($"Year: {movie.Year}")
                 .AppendLine("Completion:")
                 .AppendLine("Keeper:")
-                .AppendLine("How:")
+                .AppendLine("How: Plex")
                 .AppendLine("With:")
                 .AppendLine("---")
                 .AppendLine()
@@ -74,7 +105,7 @@ namespace ButlerCore.Jobs
             return sb.ToString();
         }
 
-        public Movie ParseMovie(string foldername)
+        public static Movie ParseMovie(string foldername)
         {
             var movie = new Movie();
             var match = Regex.Match(
@@ -94,7 +125,7 @@ namespace ButlerCore.Jobs
         public bool WriteMovieMarkdown(Movie movie)
         {
             var text = MovieToMarkdown(movie);
-            var fileName = MarkdownFile(movie.Title);
+            var fileName = MarkdownFileName(movie.Title);
             bool result;
             try
             {
@@ -112,7 +143,7 @@ namespace ButlerCore.Jobs
             return result;
         }
 
-        public string MarkdownFile(
+        public string MarkdownFileName(
             string movieTitle)
         {
             return $"{_movieMarkdownFolder}{movieTitle}.md";
@@ -138,7 +169,7 @@ namespace ButlerCore.Jobs
         public List<MovieProperty> ReadProperties(string title)
         {
             var props = new List<MovieProperty>();
-            var fileName = MarkdownFile(title);
+            var fileName = MarkdownFileName(title);
             if (!File.Exists(fileName))
                 return props;  // hasnt been processed yet
             string[] lines = File.ReadAllLines(fileName);
@@ -172,7 +203,7 @@ namespace ButlerCore.Jobs
         public List<MovieTag> ReadTags(string title)
         {
             var tags = new List<MovieTag>();
-            var fileName = MarkdownFile(title);
+            var fileName = MarkdownFileName(title);
             string[] lines = File.ReadAllLines(fileName);
             var startTags = false;
             foreach (var line in lines)
@@ -235,12 +266,11 @@ namespace ButlerCore.Jobs
 
         public bool IsKeeper(Movie movie) => IsKeeper(movie.Title);
 
-        public List<Movie> CullList(
-            string movieRootFolder = "m:\\")
+        public List<Movie> CullList()
         {
             var list = new List<Movie>();
             var fileEntries = Directory.GetDirectories(
-                movieRootFolder,
+                _movieRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {
@@ -255,17 +285,25 @@ namespace ButlerCore.Jobs
             return list;
         }
 
+        private void LogIt(string msg)
+        {
+#if DEBUG
+            Console.WriteLine(msg);
+#else
+            _logger.LogInformation(msg);
+#endif
+        }
+
         public bool Watched(Movie movie) =>
 
             ReadTags(movie.Title)
                 .Exists( t => t.Value == "movie/done");
 
-        public List<Movie> UnprocessedFiles(
-            string movieRootFolder = "m:\\")
+        public List<Movie> UnprocessedFiles()
         {
             var list = new List<Movie>();
             var fileEntries = Directory.GetDirectories(
-                movieRootFolder,
+                _movieRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {

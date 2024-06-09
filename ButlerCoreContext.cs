@@ -21,6 +21,7 @@ namespace ButlerCore
         public string? LogFile { get; set; }
         public string? ResultsFile { get; set; }
         public string? DropBoxFolder { get; set; }
+        public string? MovieRootFolder { get; set; }
     }
 
     public class ConnectionStrings
