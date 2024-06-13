@@ -1,21 +1,21 @@
 ﻿
 namespace ButlerCore.Models
 {
-    public class MovieProperty
+    public class MediaProperty
     {
         public string? Name { get; set; }
         public string? Value { get; set; }
 
-        public MovieProperty()
+        public MediaProperty()
         {           
         }
 
-        public MovieProperty(string name)
+        public MediaProperty(string name)
         {
             Name = name;
         }
 
-        public MovieProperty(
+        public MediaProperty(
             string name, 
             string propertyLine)
         {

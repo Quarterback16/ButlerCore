@@ -300,14 +300,14 @@ namespace ButlerCore
                 mjm.DoDetectorJob();
 
                 //  2. Optionally Cull   ////////////////////////////////////////////////////////
-                var msg = DateTime.Now.Day <= 20
-                    ? "You have til the 21st before we start culling"
+                var msg = DateTime.Now.Day <= 27
+                    ? "You have til the 28th before we start culling"
                     : $"Doing the Movie Cull job from {settings.MovieRootFolder}";
                 LogMessage(
                     settings.Logger,
                     msg);
 
-                if (DateTime.Now.Day > 20)
+                if (DateTime.Now.Day > 27)
                     mjm.DoCullJob();
 
                 return 0;

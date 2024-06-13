@@ -1,15 +1,15 @@
 ﻿namespace ButlerCore.Models
 {
-    public class MovieTag
+    public class MediaTag
     {
         public string? Value { get; set; }
 
-        public MovieTag()
+        public MediaTag()
         {
             Value = null;
         }
 
-        public MovieTag(string value)
+        public MediaTag(string value)
         {
             Value = value;
         }

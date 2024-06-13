@@ -1,25 +1,28 @@
 ﻿using ButlerCore.Helpers;
 using ButlerCore.Models;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ButlerCore.Jobs
 {
-    public class MovieJobMaster
+    public class TvJobMaster
     {
-        private readonly string _movieMarkdownFolder;
-        private readonly string _movieRootFolder;
+        private readonly string _tvMarkdownFolder;
+        private readonly string _tvRootFolder;
 #if !DEBUG
         private readonly ILogger _logger;
 #endif
-        public MovieJobMaster(
+        public TvJobMaster(
             ILogger logger,
             string dropBoxFolder,
-            string movieRootFolder = "m:\\")
+            string tvRootFolder = "t:\\")
         {
-            _movieMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\movies\\";
-            _movieRootFolder = movieRootFolder;
+            _tvMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\tv\\";
+            _tvRootFolder = tvRootFolder;
 #if !DEBUG
             _logger = logger;
 #endif
@@ -27,107 +30,105 @@ namespace ButlerCore.Jobs
 
         public int DoDetectorJob()
         {
-            var newMovies = 0;
-            var list = GetMovieList();
-            foreach (var movie in list) 
+            var list = GetTvList();
+            foreach (var Tv in list)
             {
-                if (IsMarkdownFor(movie.Title))
+                if (IsMarkdownFor(Tv.Title))
                     continue;
 
-                WriteMovieMarkdown(movie);
-                LogIt($"Markdown created for {movie}");
-                newMovies++;
+                WriteTvMarkdown(Tv);
+                LogIt($"Markdown created for {Tv}");
+                Console.WriteLine($"Markdown created for {Tv}");
             }
-            LogIt($"{newMovies} new movies detected");
             return 0;
         }
 
         public int DoCullJob()
         {
             var fileEntries = Directory.GetDirectories(
-                _movieRootFolder,
+                _tvRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
-                if (IsKeeper(movie))
+                var Tv = ParseTv(fileInfo.Name);
+                if (IsKeeper(Tv))
                     continue;
-                if (!Watched(movie))
+                if (!Watched(Tv))
                     continue;
                 // remove it
                 FileSystemHelper.DeleteDirectory(
                     fileInfo.FullName);
-                LogIt($"Deleted {movie}");
+                LogIt($"Deleted {Tv}");
             }
             return 0;
         }
 
-        public List<Movie> GetMovieList()
+        public List<Tv> GetTvList()
         {
-            var list = new List<Movie>();
+            var list = new List<Tv>();
             var fileEntries = Directory.GetDirectories(
-                _movieRootFolder,
+                _tvRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
                 list.Add(
-                    ParseMovie(fileInfo.Name));
+                    ParseTv(fileInfo.Name));
             }
             return list;
         }
 
         public bool IsMarkdownFor(
-            string moveTitle) 
+            string moveTitle)
         {
             var mdFile = MarkdownFileName(moveTitle);
             return File.Exists(mdFile);
         }
 
-        public static string? MovieToMarkdown(Movie movie)
+        public static string? TvToMarkdown(Tv Tv)
         {
             var theWhen = DateTime.Now.ToString("yyyy-MM-dd");
             var sb = new StringBuilder()
                 .AppendLine("---")
-                .AppendLine("tags: [movie/planning]")
+                .AppendLine("tags: [tv/planning]")
                 .AppendLine("Priority: 5")
                 .AppendLine($"when: {theWhen}")
                 .AppendLine("genre:")
                 .AppendLine("rating:")
-                .AppendLine($"Year: {movie.Year}")
+                .AppendLine($"Year: {Tv.Year}")
                 .AppendLine("Completion:")
                 .AppendLine("Keeper:")
                 .AppendLine("How: Plex")
                 .AppendLine("With:")
                 .AppendLine("---")
                 .AppendLine()
-                .AppendLine($"# {movie.Title}");
+                .AppendLine($"# {Tv.Title}");
 
             return sb.ToString();
         }
 
-        public static Movie ParseMovie(string foldername)
+        public static Tv ParseTv(string foldername)
         {
-            var movie = new Movie();
+            var Tv = new Tv();
             var match = Regex.Match(
                 input: foldername,
                 pattern: @"(.*)\s[\[\(](\d{4})[\]\)]");
 
             if (match.Success)
             {
-                movie.Title = match.Groups[1].Value.Trim();
-                movie.Year = match.Groups[2].Value;
+                Tv.Title = match.Groups[1].Value.Trim();
+                Tv.Year = match.Groups[2].Value;
             }
             else
-                movie.Title = foldername;
-            return movie;
+                Tv.Title = foldername;
+            return Tv;
         }
 
-        public bool WriteMovieMarkdown(Movie movie)
+        public bool WriteTvMarkdown(Tv Tv)
         {
-            var text = MovieToMarkdown(movie);
-            var fileName = MarkdownFileName(movie.Title);
+            var text = TvToMarkdown(Tv);
+            var fileName = MarkdownFileName(Tv.Title);
             bool result;
             try
             {
@@ -146,12 +147,12 @@ namespace ButlerCore.Jobs
         }
 
         public string MarkdownFileName(
-            string movieTitle)
+            string TvTitle)
         {
-            return $"{_movieMarkdownFolder}{movieTitle}.md";
+            return $"{_tvMarkdownFolder}{TvTitle}.md";
         }
 
-        public string? MovieProperty(
+        public string? TvProperty(
             string title,
             string propertyName)
         {
@@ -223,7 +224,7 @@ namespace ButlerCore.Jobs
                     if (line.Contains("[") && line.Contains("]"))
                     {
                         var tagString = line.Substring(
-                            line.IndexOf("[") + 1, 
+                            line.IndexOf("[") + 1,
                             line.IndexOf("]") - line.IndexOf("[") - 1);
                         var tagArray = tagString.Split(',');
                         foreach (var item in tagArray)
@@ -261,28 +262,28 @@ namespace ButlerCore.Jobs
         public bool IsKeeper(string title)
         {
             var props = ReadProperties(title);
-            if (props.Exists(p=>p.Name == "Keeper" && p.Value == "Y"))
+            if (props.Exists(p => p.Name == "Keeper" && p.Value == "Y"))
                 return true;
             return false;
         }
 
-        public bool IsKeeper(Movie movie) => IsKeeper(movie.Title);
+        public bool IsKeeper(Tv Tv) => IsKeeper(Tv.Title);
 
-        public List<Movie> CullList()
+        public List<Tv> CullList()
         {
-            var list = new List<Movie>();
+            var list = new List<Tv>();
             var fileEntries = Directory.GetDirectories(
-                _movieRootFolder,
+                _tvRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
-                if (IsKeeper(movie))
+                var Tv = ParseTv(fileInfo.Name);
+                if (IsKeeper(Tv))
                     continue;
-                if (!Watched(movie))
+                if (!Watched(Tv))
                     continue;
-                list.Add(movie);
+                list.Add(Tv);
             }
             return list;
         }
@@ -296,24 +297,24 @@ namespace ButlerCore.Jobs
 #endif
         }
 
-        public bool Watched(Movie movie) =>
+        public bool Watched(Tv Tv) =>
 
-            ReadTags(movie.Title)
-                .Exists( t => t.Value == "movie/done");
+            ReadTags(Tv.Title)
+                .Exists(t => t.Value == "Tv/done");
 
-        public List<Movie> UnprocessedFiles()
+        public List<Tv> UnprocessedFiles()
         {
-            var list = new List<Movie>();
+            var list = new List<Tv>();
             var fileEntries = Directory.GetDirectories(
-                _movieRootFolder,
+                _tvRootFolder,
                 "*.*");
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
-                var props = ReadProperties(movie.Title);
+                var Tv = ParseTv(fileInfo.Name);
+                var props = ReadProperties(Tv.Title);
                 if (props.Count == 0)
-                    list.Add(movie);
+                    list.Add(Tv);
             }
             return list;
         }
