@@ -31,6 +31,7 @@ namespace ButlerCore.Jobs
         public int DoDetectorJob()
         {
             var list = GetTvList();
+            LogIt($"There are {list.Count} TV shows");
             foreach (var Tv in list)
             {
                 if (IsMarkdownFor(Tv.Title))
@@ -45,6 +46,10 @@ namespace ButlerCore.Jobs
 
         public int DoCullJob()
         {
+            var cullCount = 0;
+            var keeperCount = 0;
+            var unwatchedCount = 0;
+            var showCount = 0;
             var fileEntries = Directory.GetDirectories(
                 _tvRootFolder,
                 "*.*");
@@ -52,15 +57,31 @@ namespace ButlerCore.Jobs
             {
                 var fileInfo = new FileInfo(file);
                 var Tv = ParseTv(fileInfo.Name);
+                showCount++;
                 if (IsKeeper(Tv))
+                {
+                    keeperCount++;
                     continue;
+                }
                 if (!Watched(Tv))
+                {
+                    unwatchedCount++;
                     continue;
+                }
                 // remove it
+#if !DEBUG
                 FileSystemHelper.DeleteDirectory(
                     fileInfo.FullName);
                 LogIt($"Deleted {Tv}");
+#else
+                LogIt($"{file} would be deleted");
+#endif
+                cullCount++;
             }
+            LogIt($"{showCount} shows");
+            LogIt($"{keeperCount} keepers");
+            LogIt($"{unwatchedCount} unwatched");
+            LogIt($"{cullCount} shows culled");
             return 0;
         }
 
@@ -300,10 +321,11 @@ namespace ButlerCore.Jobs
         public bool Watched(Tv Tv) =>
 
             ReadTags(Tv.Title)
-                .Exists(t => t.Value == "Tv/done");
+                .Exists(t => t.Value == "tv/done");
 
         public List<Tv> UnprocessedFiles()
         {
+            var unprocessedCount = 0;
             var list = new List<Tv>();
             var fileEntries = Directory.GetDirectories(
                 _tvRootFolder,
@@ -314,8 +336,12 @@ namespace ButlerCore.Jobs
                 var Tv = ParseTv(fileInfo.Name);
                 var props = ReadProperties(Tv.Title);
                 if (props.Count == 0)
+                {
                     list.Add(Tv);
+                    unprocessedCount++;
+                }
             }
+            LogIt($"{unprocessedCount} Tv Shows unprocessed");
             return list;
         }
     }

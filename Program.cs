@@ -68,6 +68,7 @@ namespace ButlerCore
             {
                 var nErrors = TipitJob(context);
                 nErrors += MovieJobs(context);
+                nErrors += TvJobs(context);
 
                 if (nErrors > 0)
                 {
@@ -258,6 +259,58 @@ namespace ButlerCore
                     var aflRanks = ts.InjectRankings("AFL", "afl-ranks", mi);
                     LogMessage(settings.Logger, aflRanks);
                 }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                LogMessage(
+                    settings.Logger,
+                    $"Exception {ex.Message}");
+                throw;
+            }
+
+        }
+
+        private static int TvJobs(
+            ButlerCoreContext settings)
+        {
+            try
+            {
+                if (settings.TvRootFolder == null)
+                {
+                    LogMessage(settings.Logger, "No TV Root Folder set");
+                    return 1;
+                }
+                if (settings.DropBoxFolder == null)
+                {
+                    LogMessage(settings.Logger, "No Dropbox Folder set");
+                    return 1;
+                }
+                if (settings.Logger == null)
+                {
+                    Console.WriteLine("No Logger set");
+                    return 1;
+                }
+
+                var tjm = new TvJobMaster(
+                    settings.Logger,
+                    settings.DropBoxFolder,
+                    settings.TvRootFolder);
+
+                //  1. Detector always Detects   /////////////////////////////////////////////////////////
+                tjm.DoDetectorJob();
+
+                //  2. Optionally Cull   ////////////////////////////////////////////////////////
+                var msg = DateTime.Now.Day <= 27
+                    ? "You have til the 28th before we start culling"
+                    : $"Doing the TV Cull job from {settings.TvRootFolder}";
+                LogMessage(
+                    settings.Logger,
+                    msg);
+
+                if (DateTime.Now.Day > 27)
+                    tjm.DoCullJob();
+
                 return 0;
             }
             catch (Exception ex)
