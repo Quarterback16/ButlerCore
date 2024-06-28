@@ -22,6 +22,9 @@
     <Reference Include="InjectorMicroService">
       <HintPath>D:\Dropbox\Services\InjectorMicroService.dll</HintPath>
     </Reference>
+    <Reference Include="MovieService">
+      <HintPath>D:\Dropbox\Services\MovieService.dll</HintPath>
+    </Reference>
     <Reference Include="TipItService">
       <HintPath>D:\Dropbox\Services\TipItService.dll</HintPath>
     </Reference>

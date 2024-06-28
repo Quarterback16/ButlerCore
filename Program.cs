@@ -350,7 +350,8 @@ namespace ButlerCore
                     settings.MovieRootFolder);
 
                 //  1. Detector always Detects   /////////////////////////////////////////////////////////
-                mjm.DoDetectorJob();
+                mjm.DoDetectorJob(
+                    new MovieService.MovieService());
 
                 //  2. Optionally Cull   ////////////////////////////////////////////////////////
                 var msg = DateTime.Now.Day <= 27

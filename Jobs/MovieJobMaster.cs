@@ -1,6 +1,8 @@
 ﻿using ButlerCore.Helpers;
 using ButlerCore.Models;
 using Microsoft.Extensions.Logging;
+using MovieService;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -25,7 +27,8 @@ namespace ButlerCore.Jobs
 #endif
         }
 
-        public int DoDetectorJob()
+        public int DoDetectorJob(
+            IMovieService movieService)
         {
             var newMovies = 0;
             var list = GetMovieList();
@@ -34,7 +37,7 @@ namespace ButlerCore.Jobs
                 if (IsMarkdownFor(movie.Title))
                     continue;
 
-                WriteMovieMarkdown(movie);
+                WriteMovieMarkdown(movie,movieService);
                 LogIt($"Markdown created for {movie}");
                 newMovies++;
             }
@@ -85,27 +88,93 @@ namespace ButlerCore.Jobs
             return File.Exists(mdFile);
         }
 
-        public static string? MovieToMarkdown(Movie movie)
+        public static string? MovieToMarkdown(
+            Movie movie,
+            IMovieService movieService)
         {
+            MovieService.Models.Movie apiData = null;
+
+            try
+            {
+                if (string.IsNullOrEmpty(movie.Year))
+                {
+                    apiData = movieService.GetMovie(movie.Title);
+                }
+                else
+                {
+                    apiData = movieService.GetMovie(movie.Title,movie.Year);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting {movie} {ex.Message}");
+            }
             var theWhen = DateTime.Now.ToString("yyyy-MM-dd");
             var sb = new StringBuilder()
                 .AppendLine("---")
                 .AppendLine("tags: [movie/planning]")
                 .AppendLine("Priority: 5")
                 .AppendLine($"when: {theWhen}")
-                .AppendLine("genre:")
+                .AppendLine($"genre: {Genre(apiData)}")
+                .AppendLine($"actors: {Actors(apiData)}")
                 .AppendLine("rating:")
                 .AppendLine($"Year: {movie.Year}")
                 .AppendLine("Completion:")
                 .AppendLine("Keeper:")
                 .AppendLine("How: Plex")
                 .AppendLine("With:")
+                .AppendLine($"Poster: {apiData.Poster}")
+                .AppendLine("q-type: movie")
                 .AppendLine("---")
                 .AppendLine()
-                .AppendLine($"# {movie.Title}");
+                .AppendLine($"# {movie.Title}")
+                .AppendLine()
+                .AppendLine(Plot(apiData))
+                .AppendLine()
+                .AppendLine(EmbedPoster(apiData.Poster));
 
             return sb.ToString();
         }
+
+        private static string Actors(
+            MovieService.Models.Movie apiData)
+        {
+            if (apiData == null)
+                return string.Empty;
+
+            return string.IsNullOrEmpty(apiData.Actors)
+                ? string.Empty
+                : apiData.Actors;
+        }
+
+        private static string Genre(
+            MovieService.Models.Movie apiData)
+        {
+            if (apiData == null)
+                return string.Empty;
+
+            return string.IsNullOrEmpty(apiData.Genre)
+                ? string.Empty
+                : apiData.Genre;
+        }
+
+        private static string Plot(
+            MovieService.Models.Movie apiData)
+        {
+            if (apiData == null)
+                return string.Empty;
+
+            return string.IsNullOrEmpty(apiData.Plot)
+                ? string.Empty
+                : apiData.Plot;
+        }
+
+        private static string? EmbedPoster(string poster) =>
+        
+            string.IsNullOrEmpty(poster)
+                ? string.Empty
+                : $"![poster]({poster})";
+       
 
         public static Movie ParseMovie(string foldername)
         {
@@ -124,9 +193,11 @@ namespace ButlerCore.Jobs
             return movie;
         }
 
-        public bool WriteMovieMarkdown(Movie movie)
+        public bool WriteMovieMarkdown(
+            Movie movie,
+            IMovieService movieService)
         {
-            var text = MovieToMarkdown(movie);
+            var text = MovieToMarkdown(movie,movieService);
             var fileName = MarkdownFileName(movie.Title);
             bool result;
             try
