@@ -10,6 +10,7 @@
                 if (Directory.Exists(directoryPath))
                 {
                     Directory.Delete(directoryPath, recursive: true);
+                    Directory.Delete(directoryPath);
                     Console.WriteLine($"Directory '{directoryPath}' has been deleted.");
                 }
                 else

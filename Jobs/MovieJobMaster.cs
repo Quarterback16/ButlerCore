@@ -2,7 +2,6 @@
 using ButlerCore.Models;
 using Microsoft.Extensions.Logging;
 using MovieService;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -50,19 +49,34 @@ namespace ButlerCore.Jobs
             var fileEntries = Directory.GetDirectories(
                 _movieRootFolder,
                 "*.*");
+            var showCount = fileEntries.Count();
+            var keeperCount = 0;
+            var unwatchedCount = 0;
+            var cullCount = 0;
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
                 var movie = ParseMovie(fileInfo.Name);
                 if (IsKeeper(movie))
+                {
+                    keeperCount++;
                     continue;
+                }
                 if (!Watched(movie))
+                {
+                    unwatchedCount++;
                     continue;
+                }
                 // remove it
                 FileSystemHelper.DeleteDirectory(
                     fileInfo.FullName);
                 LogIt($"Deleted {movie}");
+                cullCount++;
             }
+            LogIt($"{showCount} shows");
+            LogIt($"{keeperCount} keepers");
+            LogIt($"{unwatchedCount} unwatched");
+            LogIt($"{cullCount} shows culled");
             return 0;
         }
 
