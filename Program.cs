@@ -206,6 +206,7 @@ namespace ButlerCore
         {
             try
             {
+                LogMessage(settings.Logger, "TipItJob ...");
                 if (settings.StartDateTime == null)
                     return 1;
                 if (settings.ResultsFile == null)
@@ -276,6 +277,7 @@ namespace ButlerCore
         {
             try
             {
+                LogMessage(settings.Logger, "TvJobs ...");
                 if (settings.TvRootFolder == null)
                 {
                     LogMessage(settings.Logger, "No TV Root Folder set");
@@ -328,6 +330,7 @@ namespace ButlerCore
         {
             try
             {
+                LogMessage(settings.Logger, "MovieJobs ...");
                 if (settings.MovieRootFolder == null)
                 {
                     LogMessage(settings.Logger, "No Movie Root Folder set");

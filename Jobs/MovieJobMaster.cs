@@ -31,6 +31,11 @@ namespace ButlerCore.Jobs
         {
             var newMovies = 0;
             var list = GetMovieList();
+            if (list == null)
+            { 
+                LogIt("Failed to get Movie list");
+                return 1;
+            }
             foreach (var movie in list) 
             {
                 if (IsMarkdownFor(movie.Title))

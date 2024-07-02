@@ -1,5 +1,6 @@
 ﻿using ButlerCore.Helpers;
 using ButlerCore.Models;
+using LanguageExt;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,11 @@ namespace ButlerCore.Jobs
         public int DoDetectorJob()
         {
             var list = GetTvList();
+            if (list == null)
+            {
+                LogIt("Detector failed to get TV list");
+                return 1;
+            }
             LogIt($"There are {list.Count} TV shows");
             foreach (var Tv in list)
             {
@@ -53,6 +59,11 @@ namespace ButlerCore.Jobs
             var fileEntries = Directory.GetDirectories(
                 _tvRootFolder,
                 "*.*");
+            if (fileEntries == null)
+            {
+                LogIt("Culler failed to get TV list");
+                return 1;
+            }
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
