@@ -407,5 +407,59 @@ namespace ButlerCore.Jobs
             }
             return list;
         }
+
+        public string? MoviePosterMarkdownLink(
+            Movie movie, 
+            MovieService.MovieService movieService)
+        {
+            MovieService.Models.Movie apiData = null;
+
+            try
+            {
+                if (string.IsNullOrEmpty(movie.Year))
+                {
+                    apiData = movieService.GetMovie(movie.Title);
+                }
+                else
+                {
+                    apiData = movieService.GetMovie(movie.Title, movie.Year);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting {movie} {ex.Message}");
+            }
+            var sb = new StringBuilder()
+                .AppendLine(EmbedPoster(apiData.Poster));
+
+            return sb.ToString();
+        }
+
+        public string? MoviePlotMarkdown(
+            Movie movie, 
+            MovieService.MovieService movieService)
+        {
+            MovieService.Models.Movie apiData = null;
+
+            try
+            {
+                if (string.IsNullOrEmpty(movie.Year))
+                {
+                    apiData = movieService.GetMovie(movie.Title);
+                }
+                else
+                {
+                    apiData = movieService.GetMovie(movie.Title, movie.Year);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting {movie} {ex.Message}");
+            }
+            var sb = new StringBuilder()
+                .AppendLine(Plot(apiData));
+
+            return sb.ToString();
+        }
     }
 }

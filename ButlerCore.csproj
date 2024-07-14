@@ -19,8 +19,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="EventStoreService">
+      <HintPath>D:\Dropbox\Services\EventStoreService.dll</HintPath>
+    </Reference>
+    <Reference Include="HearthstoneReportService">
+      <HintPath>D:\Dropbox\Services\HearthstoneReportService.dll</HintPath>
+    </Reference>
     <Reference Include="InjectorMicroService">
       <HintPath>D:\Dropbox\Services\InjectorMicroService.dll</HintPath>
+    </Reference>
+    <Reference Include="Knoware.HearthstoneApi">
+      <HintPath>D:\Dropbox\Services\Knoware.HearthstoneApi.dll</HintPath>
     </Reference>
     <Reference Include="MovieService">
       <HintPath>D:\Dropbox\Services\MovieService.dll</HintPath>

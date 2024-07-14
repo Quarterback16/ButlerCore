@@ -69,6 +69,7 @@ namespace ButlerCore
                 var nErrors = TipitJob(context);
                 nErrors += MovieJobs(context);
                 nErrors += TvJobs(context);
+                nErrors += HearthstoneJobs(context);
 
                 if (nErrors > 0)
                 {
@@ -272,6 +273,42 @@ namespace ButlerCore
 
         }
 
+        private static int HearthstoneJobs(
+            ButlerCoreContext settings)
+        {
+            try
+            {
+                LogMessage(settings.Logger, "HearthstoneJobs ...");
+                if (settings.DropBoxFolder == null)
+                {
+                    LogMessage(settings.Logger, "No Dropbox Folder set");
+                    return 1;
+                }
+                if (settings.Logger == null)
+                {
+                    Console.WriteLine("No Logger set");
+                    return 1;
+                }
+
+                var jm = new HearthstoneJobMaster(
+                    settings.Logger,
+                    settings.DropBoxFolder);
+
+                jm.DoMetaChampReport();
+                jm.DoChampDeckReport();
+                jm.DoWinLossGraph();
+    
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                LogMessage(
+                    settings.Logger,
+                    $"Exception {ex.Message}");
+                throw;
+            }
+
+        }
         private static int TvJobs(
             ButlerCoreContext settings)
         {
