@@ -67,9 +67,9 @@ namespace ButlerCore
             while (DateTime.Now.TimeOfDay < ToTimeOfDay(context.KnockOffTime))
             {
                 var nErrors = TipitJob(context);
+                nErrors += HearthstoneJobs(context);
                 nErrors += MovieJobs(context);
                 nErrors += TvJobs(context);
-                nErrors += HearthstoneJobs(context);
 
                 if (nErrors > 0)
                 {
