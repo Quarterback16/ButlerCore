@@ -284,6 +284,11 @@ namespace ButlerCore
                     LogMessage(settings.Logger, "No Dropbox Folder set");
                     return 1;
                 }
+                if (settings.HsEventFolder == null)
+                {
+                    LogMessage(settings.Logger, "No Dropbox Folder set");
+                    return 1;
+                }
                 if (settings.Logger == null)
                 {
                     Console.WriteLine("No Logger set");
@@ -292,7 +297,8 @@ namespace ButlerCore
 
                 var jm = new HearthstoneJobMaster(
                     settings.Logger,
-                    settings.DropBoxFolder);
+                    settings.DropBoxFolder,
+                    settings.HsEventFolder);
 
                 jm.DoMetaChampReport();
                 jm.DoChampDeckReport();

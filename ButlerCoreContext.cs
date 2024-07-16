@@ -23,6 +23,7 @@ namespace ButlerCore
         public string? DropBoxFolder { get; set; }
         public string? MovieRootFolder { get; set; }
         public string? TvRootFolder { get; set; }
+        public string? HsEventFolder { get; set; }
     }
 
     public class ConnectionStrings

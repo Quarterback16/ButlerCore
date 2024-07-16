@@ -17,11 +17,12 @@ namespace ButlerCore.Jobs
         public string ObsidianHeartstoneMetasFolder { get; set; }
         public HearthstoneJobMaster(
             ILogger logger,
-            string dropBoxFolder)
+            string dropBoxFolder,
+            string hsEventFolder)
         {
             _hrs = new HsReportService(
                 new HsEventStore(
-                    "l:\\apps\\dd\\gevents.json"));
+                    hsEventFolder));
 #if !DEBUG
             _logger = logger;
 #endif
