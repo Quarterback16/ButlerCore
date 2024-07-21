@@ -186,6 +186,7 @@ namespace ButlerCore
             LogSettingMessage(context.Logger, "Log File       ", context.LogFile?.ToString());
             LogSettingMessage(context.Logger, "Result File    ", context.ResultsFile?.ToString());
             LogSettingMessage(context.Logger, "Dropbox Folder ", context.DropBoxFolder?.ToString());
+            LogSettingMessage(context.Logger, "Event Folder   ", context.HsEventFolder?.ToString());
             return Some(context);
         }
 

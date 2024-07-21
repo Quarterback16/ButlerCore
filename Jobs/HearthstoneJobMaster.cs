@@ -20,12 +20,13 @@ namespace ButlerCore.Jobs
             string dropBoxFolder,
             string hsEventFolder)
         {
+#if !DEBUG
+            _logger = logger;
+            _logger.LogInformation($"Events loaded from : {hsEventFolder}");
+#endif
             _hrs = new HsReportService(
                 new HsEventStore(
                     hsEventFolder));
-#if !DEBUG
-            _logger = logger;
-#endif
             ObsidianHeartstoneMetasFolder = $"//03 - Hearthstone//Metas//";
             var hcs = new HearthstoneCardService();
             CurrentMeta = hcs.GetMeta();
