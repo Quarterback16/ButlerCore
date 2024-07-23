@@ -31,10 +31,19 @@ namespace ButlerCore.Jobs
             ObsidianHeartstoneMetasFolder = "//03 - Hearthstone//Metas//";
 #if !DEBUG
             _logger.LogInformation("HS event service initialised.");
-            _logger.LogInformation($"writing reports to {ObsidianHeartstoneMetasFolder} folder.");
+            _logger.LogInformation(
+                $"writing reports to {ObsidianHeartstoneMetasFolder} folder.");
 #endif
             var hcs = new HearthstoneCardService();
-            CurrentMeta = hcs.GetMeta();
+            var apiKey = hcs.ApiKey();
+#if !DEBUG
+            _logger.LogInformation($"HS API key : {apiKey}");
+#endif
+            var info = hcs.GetInfo();
+            if (info != null && info.Patch != null)
+            {
+                CurrentMeta = hcs.GetMeta();
+            }
 #if !DEBUG
             _logger.LogInformation($"Current Meta is : {CurrentMeta}");
 #endif
