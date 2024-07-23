@@ -287,7 +287,7 @@ namespace ButlerCore
                 }
                 if (settings.HsEventFolder == null)
                 {
-                    LogMessage(settings.Logger, "No Dropbox Folder set");
+                    LogMessage(settings.Logger, "No HsEvent Folder set");
                     return 1;
                 }
                 if (settings.Logger == null)
@@ -301,6 +301,9 @@ namespace ButlerCore
                     settings.DropBoxFolder,
                     settings.HsEventFolder);
 
+                if (string.IsNullOrEmpty(jm.CurrentMeta))
+                    return 1;
+
                 jm.DoMetaChampReport();
                 jm.DoChampDeckReport();
                 jm.DoWinLossGraph();
@@ -309,13 +312,13 @@ namespace ButlerCore
             }
             catch (Exception ex)
             {
-                LogMessage(
+                ErrorMessage(
                     settings.Logger,
                     $"Exception {ex.Message}");
                 throw;
             }
-
         }
+
         private static int TvJobs(
             ButlerCoreContext settings)
         {
@@ -427,7 +430,12 @@ namespace ButlerCore
         
             DateTime.Now.DayOfWeek == DayOfWeek.Saturday 
             || DateTime.Now.DayOfWeek == DayOfWeek.Sunday;
-        
+
+
+        [LoggerMessage(Level = LogLevel.Information, Message = "{anyMessage}")]
+        static partial void ErrorMessage(
+            ILogger? logger,
+            string? anyMessage);
 
         [LoggerMessage(Level = LogLevel.Information, Message = "{anyMessage}")]
         static partial void LogMessage(
