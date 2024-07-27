@@ -62,7 +62,7 @@ namespace ButlerCore.Jobs
             var md = WrapWithPre(_hrs.ChampDeckReport());
             _mdInjector.InjectMarkdown(
                 targetfile: $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md",
-                tagName: "metachamp",
+                tagName: "champdeck",
                 markdown: md);
             return md;
         }
