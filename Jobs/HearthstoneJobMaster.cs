@@ -21,37 +21,47 @@ namespace ButlerCore.Jobs
             string dropBoxFolder,
             string hsEventFolder)
         {
+            try
+            {
 #if !DEBUG
             _logger = logger;
             _logger.LogInformation($"Events loaded from : {hsEventFolder}");
 #endif
-            _hrs = new HsReportService(
-                new HsEventStore(
-                    hsEventFolder));
-            ObsidianHeartstoneMetasFolder = "//03 - Hearthstone//Metas//";
+                _hrs = new HsReportService(
+                    new HsEventStore(
+                        hsEventFolder));
+                ObsidianHeartstoneMetasFolder = "//03 - Hearthstone//Metas//";
 #if !DEBUG
             _logger.LogInformation("HS event service initialised.");
             _logger.LogInformation(
                 $"writing reports to {ObsidianHeartstoneMetasFolder} folder.");
 #endif
-            var hcs = new HearthstoneCardService();
-            var apiKey = hcs.ApiKey();
+                var hcs = new HearthstoneCardService();
+                var apiKey = hcs.ApiKey();
 #if !DEBUG
             _logger.LogInformation($"HS API key : {apiKey}");
 #endif
-            var info = hcs.GetInfo();
-            if (info != null && info.Patch != null)
-            {
-                CurrentMeta = hcs.GetMeta();
-            }
+                var info = hcs.GetInfo();
+                if (info != null && info.Patch != null)
+                {
+                    CurrentMeta = hcs.GetMeta();
+                }
 #if !DEBUG
             _logger.LogInformation($"Current Meta is : {CurrentMeta}");
 #endif
-            _mdInjector = new MarkdownInjector(
-                $"{dropBoxFolder}Obsidian\\ChestOfNotes\\");
+                _mdInjector = new MarkdownInjector(
+                    $"{dropBoxFolder}Obsidian\\ChestOfNotes\\");
 #if !DEBUG
             _logger.LogInformation("md injector initialisd");
 #endif
+            }
+            catch (Exception ex)
+            {
+#if !DEBUG
+                _logger.LogError( ex );
+#endif
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public string DoChampDeckReport()

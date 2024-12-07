@@ -400,6 +400,9 @@ namespace ButlerCore
                     settings.MovieRootFolder);
 
                 //  1. Detector always Detects   /////////////////////////////////////////////////////////
+                LogMessage(
+                    settings.Logger,
+                    "Detecting new Movies");
                 mjm.DoDetectorJob(
                     new MovieService.MovieService());
 

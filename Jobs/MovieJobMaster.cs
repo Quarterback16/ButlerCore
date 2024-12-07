@@ -19,10 +19,17 @@ namespace ButlerCore.Jobs
             string dropBoxFolder,
             string movieRootFolder = "m:\\")
         {
-            _movieMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\movies\\";
-            _movieRootFolder = movieRootFolder;
 #if !DEBUG
             _logger = logger;
+            LogIt("Instantiating MovieJobMaster");
+#endif
+            _movieMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\movies\\";
+#if !DEBUG
+            LogIt($"Movie Markdown location is {_movieMarkdownFolder}");
+#endif
+            _movieRootFolder = movieRootFolder;
+#if !DEBUG
+            LogIt($"Movie Root location is {_movieRootFolder}");
 #endif
         }
 
@@ -101,11 +108,10 @@ namespace ButlerCore.Jobs
         }
 
         public bool IsMarkdownFor(
-            string moveTitle) 
-        {
-            var mdFile = MarkdownFileName(moveTitle);
-            return File.Exists(mdFile);
-        }
+            string moveTitle) =>
+        
+            File.Exists(MarkdownFileName(moveTitle));
+        
 
         public static string? MovieToMarkdown(
             Movie movie,
@@ -236,10 +242,8 @@ namespace ButlerCore.Jobs
         }
 
         public string MarkdownFileName(
-            string movieTitle)
-        {
-            return $"{_movieMarkdownFolder}{movieTitle}.md";
-        }
+            string movieTitle) =>
+                $"{_movieMarkdownFolder}{movieTitle}.md";
 
         public string? MovieProperty(
             string title,
