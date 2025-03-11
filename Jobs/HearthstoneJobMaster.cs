@@ -3,14 +3,14 @@ using HearthstoneReportService;
 using InjectorMicroService;
 using Knoware.HearthstoneApi.Service;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace ButlerCore.Jobs
 {
     public class HearthstoneJobMaster
     {
-#if !DEBUG
         private readonly ILogger _logger;
-#endif
+
         private readonly HsReportService _hrs;
         private readonly IMarkdownInjector _mdInjector;
         public string? CurrentMeta { get; set; }
@@ -23,71 +23,66 @@ namespace ButlerCore.Jobs
         {
             try
             {
-#if !DEBUG
-            _logger = logger;
-            _logger.LogInformation($"Events loaded from : {hsEventFolder}");
-#endif
+                _logger = logger;
+                LogIt($"Events loaded from : {hsEventFolder}");
                 _hrs = new HsReportService(
                     new HsEventStore(
                         hsEventFolder));
                 ObsidianHeartstoneMetasFolder = "//03 - Hearthstone//Metas//";
-#if !DEBUG
-            _logger.LogInformation("HS event service initialised.");
-            _logger.LogInformation(
-                $"writing reports to {ObsidianHeartstoneMetasFolder} folder.");
-#endif
+                LogIt("HS event service initialised.");
+                LogIt(
+                    $"writing reports to {ObsidianHeartstoneMetasFolder} folder.");
                 var hcs = new HearthstoneCardService();
                 var apiKey = hcs.ApiKey();
-#if !DEBUG
-            _logger.LogInformation($"HS API key : {apiKey}");
-#endif
+                LogIt($"HS API key : {apiKey}");
                 var info = hcs.GetInfo();
                 if (info != null && info.Patch != null)
                 {
                     CurrentMeta = hcs.GetMeta();
                 }
-#if !DEBUG
-            _logger.LogInformation($"Current Meta is : {CurrentMeta}");
-#endif
+                LogIt($"Current Meta is : {CurrentMeta}");
                 _mdInjector = new MarkdownInjector(
                     $"{dropBoxFolder}Obsidian\\ChestOfNotes\\");
-#if !DEBUG
-            _logger.LogInformation("md injector initialisd");
-#endif
+                LogIt("md injector initialisd");
             }
             catch (Exception ex)
             {
-#if !DEBUG
-                _logger.LogError( ex );
-#endif
+                _logger.LogError( ex.Message );
                 Console.WriteLine(ex.Message);
             }
         }
 
         public string DoChampDeckReport()
         {
-#if !DEBUG
-            _logger.LogInformation("DoChampDeckReport...");
-#endif
+            LogIt("DoChampDeckReport...");
             var md = WrapWithPre(_hrs.ChampDeckReport());
             _mdInjector.InjectMarkdown(
                 targetfile: $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md",
                 tagName: "champdeck",
                 markdown: md);
+            LogIt(md);
             return md;
         }
 
         public string DoMetaChampReport()
         {
-#if !DEBUG
-            _logger.LogInformation("DoMetaChampReport...");
-#endif
+            LogIt("DoMetaChampReport...");
             var md = WrapWithPre(_hrs.MetaChampReport());
             _mdInjector.InjectMarkdown(
                 targetfile: $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md",
                 tagName: "metachamp",
                 markdown: md);
+            LogIt(md);
             return md;
+        }
+
+        private void LogIt(string msg)
+        {
+#if DEBUG
+            Debug.WriteLine(msg);
+#else 
+            _logger.LogInformation(msg);
+#endif
         }
 
         private static string WrapWithPre(string report) =>
@@ -97,14 +92,13 @@ namespace ButlerCore.Jobs
 
         public string DoWinLossGraph()
         {
-#if !DEBUG
-            _logger.LogInformation("DoWinLossGraph...");
-#endif
+            LogIt("DoWinLossGraph...");
             var md = WrapWithPre(_hrs.WinLossGraph(DateTime.Now));
             _mdInjector.InjectMarkdown(
                 targetfile: $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md",
                 tagName: "win-loss",
                 markdown: md);
+            LogIt(md);
             return md;
         }
     }
