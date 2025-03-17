@@ -15,6 +15,8 @@ namespace ButlerCore
         public string? ConnectTo { get; set; }
         public DateTime? StartDateTime { get; set; }
         public int? Frequency { get; set; }
+
+        public int? TippingSeason { get; set; }
         public bool? Beep { get; set; }
         public bool? Stats { get; set; }
         public string? KnockOffTime { get; set; }

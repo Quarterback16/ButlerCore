@@ -208,7 +208,7 @@ namespace ButlerCore
         {
             try
             {
-                LogMessage(settings.Logger, "TipItJob ...");
+                LogMessage(settings.Logger, $"TipItJob {settings.TippingSeason}...");
                 if (settings.StartDateTime == null)
                     return 1;
                 if (settings.ResultsFile == null)
@@ -228,6 +228,7 @@ namespace ButlerCore
                 //  1. Update Results   /////////////////////////////////////////////////////////
                 var newState = ts.GetNewTippingState(
                     DateTime.Now.AddDays(1));
+                //  1b. Write Results to Log
                 LogMessage(settings.Logger, $"{ts.NewResults.Count} new results added");
                 ts.NewResults.ForEach(
                     nr =>
@@ -247,12 +248,25 @@ namespace ButlerCore
                     ts.Inject("AFL", "afl-tips", mi);
                 }
                 //  3.  Inject Easy Tips  //////////////////////////////////////////////////////
-                LogMessage(settings.Logger, $"Injecting easiest into {DashboardUtils.DashboardFile(2024)}");
+                var season = 0;
+                if (settings.TippingSeason.HasValue)
+                    season = settings.TippingSeason.Value;
+                if (season == 0)
+                {
+                    LogMessage(settings.Logger, "Tipping Season has not been set");
+                    return 0;
+                }                   
+                LogMessage(
+                    settings.Logger, 
+                    $@"Injecting easiest into {
+                        DashboardUtils.DashboardFile(season)
+                        }");
                 var md = ts.Easiest();
                 mi.InjectMarkdown(
-                    DashboardUtils.DashboardFile(2024),
+                    DashboardUtils.DashboardFile(season),
                     "easiest",
                     md);
+                LogMessage(settings.Logger, md);
 
                 //  4.  Inject Rankings  //////////////////////////////////////////////////////
                 if (!IsWeekend())
@@ -271,7 +285,6 @@ namespace ButlerCore
                     $"Exception {ex.Message}");
                 throw;
             }
-
         }
 
         private static int HearthstoneJobs(
