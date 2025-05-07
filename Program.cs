@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using InjectorMicroService;
 using TipItService.Helpers;
 using ButlerCore.Jobs;
+using TipItService.Interfaces;
 
 namespace ButlerCore
 {
@@ -181,6 +182,7 @@ namespace ButlerCore
             LogSettingMessage(context.Logger, "Starting", startDate);
             WriteSettings(context.Logger, "AppNames  ", context.AppNames);
             LogSettingMessage(context.Logger, "ConnectTo      ", context.ConnectTo);
+            LogSettingMessage(context.Logger, "TippingSeason  ", context.TippingSeason.ToString());
             LogSettingMessage(context.Logger, "Conn str       ", SelectConnectionString(context));
             LogSettingMessage(context.Logger, "Frequency      ", context.Frequency?.ToString());
             LogSettingMessage(context.Logger, "Log File       ", context.LogFile?.ToString());
@@ -276,6 +278,11 @@ namespace ButlerCore
                     var aflRanks = ts.InjectRankings("AFL", "afl-ranks", mi);
                     LogMessage(settings.Logger, aflRanks);
                 }
+
+                //  5.  Missing Results
+                CheckForMissingResults("NRL", settings, ts.TippingContext);
+                CheckForMissingResults("AFL", settings, ts.TippingContext);
+
                 return 0;
             }
             catch (Exception ex)
@@ -285,6 +292,22 @@ namespace ButlerCore
                     $"Exception {ex.Message}");
                 throw;
             }
+        }
+
+        private static void CheckForMissingResults(
+            string leagueCode,
+            ButlerCoreContext settings,
+            ITippingContext ts)
+        {
+            var missingResults = ts.MissingResults(
+                leagueCode,
+                DateTime.Now.AddDays(-7));
+            LogMessage(
+                settings.Logger,
+                $"There are {missingResults.Count} missing results in {leagueCode}");
+            if (missingResults.Count > 0)
+                missingResults.ForEach(m => Console.WriteLine(m));
+
         }
 
         private static int HearthstoneJobs(
