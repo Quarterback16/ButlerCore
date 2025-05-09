@@ -306,7 +306,10 @@ namespace ButlerCore
                 settings.Logger,
                 $"There are {missingResults.Count} missing results in {leagueCode}");
             if (missingResults.Count > 0)
-                missingResults.ForEach(m => Console.WriteLine(m));
+                missingResults.ForEach(
+                    m => LogMessage(
+                        settings.Logger, 
+                        m.ToString()));
 
         }
 
