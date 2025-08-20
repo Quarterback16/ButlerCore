@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="BattleNetApi">
+      <HintPath>..\..\..\Dropbox\Services\BattleNetApi.dll</HintPath>
+    </Reference>
     <Reference Include="EventStoreService">
       <HintPath>D:\Dropbox\Services\EventStoreService.dll</HintPath>
     </Reference>
@@ -38,9 +41,6 @@
     </Reference>
     <Reference Include="InjectorMicroService">
       <HintPath>D:\Dropbox\Services\InjectorMicroService.dll</HintPath>
-    </Reference>
-    <Reference Include="Knoware.HearthstoneApi">
-      <HintPath>D:\Dropbox\Services\Knoware.HearthstoneApi.dll</HintPath>
     </Reference>
     <Reference Include="MovieService">
       <HintPath>D:\Dropbox\Services\MovieService.dll</HintPath>

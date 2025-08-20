@@ -1,7 +1,7 @@
-﻿using EventStoreService;
+﻿using BattleNetApi.Service;
+using EventStoreService;
 using HearthstoneReportService;
 using InjectorMicroService;
-using Knoware.HearthstoneApi.Service;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
@@ -33,13 +33,7 @@ namespace ButlerCore.Jobs
                 LogIt(
                     $"writing reports to {ObsidianHeartstoneMetasFolder} folder.");
                 var hcs = new HearthstoneCardService();
-                var apiKey = hcs.ApiKey();
-                LogIt($"HS API key : {apiKey}");
-                var info = hcs.GetInfo();
-                if (info != null && info.Patch != null)
-                {
-                    CurrentMeta = hcs.GetMeta();
-                }
+                CurrentMeta = hcs.GetCurrentMeta();
                 LogIt($"Current Meta is : {CurrentMeta}");
                 _mdInjector = new MarkdownInjector(
                     $"{dropBoxFolder}Obsidian\\ChestOfNotes\\");
@@ -47,7 +41,7 @@ namespace ButlerCore.Jobs
             }
             catch (Exception ex)
             {
-                _logger.LogError( ex.Message );
+                _logger?.LogError( ex.Message );
                 Console.WriteLine(ex.Message);
             }
         }
