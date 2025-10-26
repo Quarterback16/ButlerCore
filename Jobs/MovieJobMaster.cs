@@ -117,7 +117,7 @@ namespace ButlerCore.Jobs
             Movie movie,
             IMovieService movieService)
         {
-            MovieService.Models.Movie apiData = null;
+            MovieService.Models.Show apiData = null;
 
             try
             {
@@ -154,15 +154,15 @@ namespace ButlerCore.Jobs
                 .AppendLine()
                 .AppendLine($"# {movie.Title}")
                 .AppendLine()
-                .AppendLine(Plot(apiData))
+                .AppendLine(ShowHelper.Plot(apiData))
                 .AppendLine()
-                .AppendLine(EmbedPoster(apiData.Poster));
+                .AppendLine(ShowHelper.EmbedPoster(apiData.Poster));
 
             return sb.ToString();
         }
 
         private static string Actors(
-            MovieService.Models.Movie apiData)
+            MovieService.Models.Show apiData)
         {
             if (apiData == null)
                 return string.Empty;
@@ -173,7 +173,7 @@ namespace ButlerCore.Jobs
         }
 
         private static string Genre(
-            MovieService.Models.Movie apiData)
+            MovieService.Models.Show apiData)
         {
             if (apiData == null)
                 return string.Empty;
@@ -183,22 +183,6 @@ namespace ButlerCore.Jobs
                 : apiData.Genre;
         }
 
-        private static string Plot(
-            MovieService.Models.Movie apiData)
-        {
-            if (apiData == null)
-                return string.Empty;
-
-            return string.IsNullOrEmpty(apiData.Plot)
-                ? string.Empty
-                : apiData.Plot;
-        }
-
-        private static string? EmbedPoster(string poster) =>
-        
-            string.IsNullOrEmpty(poster)
-                ? string.Empty
-                : $"![poster]({poster})";
        
 
         public static Movie ParseMovie(string foldername)
@@ -416,7 +400,7 @@ namespace ButlerCore.Jobs
             Movie movie, 
             MovieService.MovieService movieService)
         {
-            MovieService.Models.Movie apiData = null;
+            MovieService.Models.Show apiData = null;
 
             try
             {
@@ -434,7 +418,7 @@ namespace ButlerCore.Jobs
                 Console.WriteLine($"Error getting {movie} {ex.Message}");
             }
             var sb = new StringBuilder()
-                .AppendLine(EmbedPoster(apiData.Poster));
+                .AppendLine(ShowHelper.EmbedPoster(apiData.Poster));
 
             return sb.ToString();
         }
@@ -443,7 +427,7 @@ namespace ButlerCore.Jobs
             Movie movie, 
             MovieService.MovieService movieService)
         {
-            MovieService.Models.Movie apiData = null;
+            MovieService.Models.Show apiData = null;
 
             try
             {
@@ -461,7 +445,7 @@ namespace ButlerCore.Jobs
                 Console.WriteLine($"Error getting {movie} {ex.Message}");
             }
             var sb = new StringBuilder()
-                .AppendLine(Plot(apiData));
+                .AppendLine(ShowHelper.Plot(apiData));
 
             return sb.ToString();
         }

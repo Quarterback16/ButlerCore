@@ -1,6 +1,8 @@
 ﻿using ButlerCore.Helpers;
 using ButlerCore.Models;
 using Microsoft.Extensions.Logging;
+using MovieService;
+using MovieService.Models;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -114,24 +116,41 @@ namespace ButlerCore.Jobs
             return File.Exists(mdFile);
         }
 
-        public static string? TvToMarkdown(Tv Tv)
+        public async Task<string?> TvToMarkdown(
+            Tv tv,
+            IMovieService tvService)
         {
+            Show apiData = null;
+
+            try
+            {
+                apiData = await tvService.GetTvShowAsync(tv.Title);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting {tv} {ex.Message}");
+            }
             var theWhen = DateTime.Now.ToString("yyyy-MM-dd");
             var sb = new StringBuilder()
                 .AppendLine("---")
                 .AppendLine("tags: [tv/planning]")
                 .AppendLine("Priority: 5")
                 .AppendLine($"when: {theWhen}")
-                .AppendLine("genre:")
+                .AppendLine($"genre: {apiData?.Genre}")
                 .AppendLine("rating:")
-                .AppendLine($"Year: {Tv.Year}")
+                .AppendLine($"Year: {apiData?.Year}")
                 .AppendLine("Completion:")
                 .AppendLine("Keeper:")
                 .AppendLine("How: Plex")
                 .AppendLine("With:")
                 .AppendLine("---")
                 .AppendLine()
-                .AppendLine($"# {Tv.Title}");
+                .AppendLine($"# {tv.Title}")
+                .AppendLine()
+                .AppendLine(ShowHelper.Plot(apiData))
+                .AppendLine()
+                .AppendLine(ShowHelper.EmbedPoster(apiData.Poster));
 
             return sb.ToString();
         }
@@ -153,17 +172,19 @@ namespace ButlerCore.Jobs
             return Tv;
         }
 
-        public bool WriteTvMarkdown(Tv Tv)
+        public async Task<bool> WriteTvMarkdown(Tv tv)
         {
-            var text = TvToMarkdown(Tv);
-            var fileName = MarkdownFileName(Tv.Title);
+            var text = await TvToMarkdown(
+                tv,
+                new MovieService.MovieService());
+            var fileName = MarkdownFileName(tv.Title);
             bool result;
             try
             {
                 using (StreamWriter outputFile = new StreamWriter(
                     fileName))
                 {
-                    outputFile.WriteLine(text);
+                    await outputFile.WriteLineAsync(text);
                 }
                 result = true;
             }
