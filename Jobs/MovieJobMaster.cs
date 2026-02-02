@@ -68,7 +68,7 @@ namespace ButlerCore.Jobs
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
+                var movie = ParseMovie(fileInfo);
                 if (IsKeeper(movie))
                 {
                     keeperCount++;
@@ -102,7 +102,7 @@ namespace ButlerCore.Jobs
             {
                 var fileInfo = new FileInfo(file);
                 list.Add(
-                    ParseMovie(fileInfo.Name));
+                    ParseMovie(fileInfo));
             }
             return list;
         }
@@ -117,7 +117,7 @@ namespace ButlerCore.Jobs
             Movie movie,
             IMovieService movieService)
         {
-            MovieService.Models.Show apiData = null;
+            MovieService.Models.Show? apiData = null;
 
             try
             {
@@ -150,6 +150,7 @@ namespace ButlerCore.Jobs
                 .AppendLine("With:")
                 .AppendLine($"Poster: {apiData.Poster}")
                 .AppendLine("q-type: movie")
+                .AppendLine($"FileName: {movie.FileName}")
                 .AppendLine("---")
                 .AppendLine()
                 .AppendLine($"# {movie.Title}")
@@ -185,20 +186,24 @@ namespace ButlerCore.Jobs
 
        
 
-        public static Movie ParseMovie(string foldername)
+        public static Movie ParseMovie(FileInfo fileInfo)
         {
             var movie = new Movie();
             var match = Regex.Match(
-                input: foldername,
+                input: fileInfo.Name,
                 pattern: @"(.*)\s[\[\(](\d{4})[\]\)]");
 
             if (match.Success)
             {
                 movie.Title = match.Groups[1].Value.Trim();
                 movie.Year = match.Groups[2].Value;
+                movie.FileName = fileInfo.Name;
             }
             else
-                movie.Title = foldername;
+            {
+                movie.Title = fileInfo.Name;
+                movie.FileName = fileInfo.Name;
+            }
             return movie;
         }
 
@@ -355,7 +360,7 @@ namespace ButlerCore.Jobs
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
+                var movie = ParseMovie(fileInfo);
                 if (IsKeeper(movie))
                     continue;
                 if (!Watched(movie))
@@ -388,7 +393,7 @@ namespace ButlerCore.Jobs
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
+                var movie = ParseMovie(fileInfo);
                 var props = ReadProperties(movie.Title);
                 if (props.Count == 0)
                     list.Add(movie);
