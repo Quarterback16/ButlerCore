@@ -30,6 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="BattleNetApi">
+      <HintPath>..\..\..\Dropbox\Services\BattleNetApi.dll</HintPath>
+    </Reference>
     <Reference Include="EventStoreService">
       <HintPath>..\..\..\Users\quart\Dropbox\Services\EventStoreService.dll</HintPath>
     </Reference>

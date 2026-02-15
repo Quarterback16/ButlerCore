@@ -68,7 +68,7 @@ namespace ButlerCore.Jobs
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
+                var movie = ParseMovie(fileInfo);
                 if (IsKeeper(movie))
                 {
                     keeperCount++;
@@ -102,7 +102,7 @@ namespace ButlerCore.Jobs
             {
                 var fileInfo = new FileInfo(file);
                 list.Add(
-                    ParseMovie(fileInfo.Name));
+                    ParseMovie(fileInfo));
             }
             return list;
         }
@@ -117,7 +117,7 @@ namespace ButlerCore.Jobs
             Movie movie,
             IMovieService movieService)
         {
-            MovieService.Models.Movie apiData = null;
+            MovieService.Models.Show? apiData = null;
 
             try
             {
@@ -150,19 +150,20 @@ namespace ButlerCore.Jobs
                 .AppendLine("With:")
                 .AppendLine($"Poster: {apiData.Poster}")
                 .AppendLine("q-type: movie")
+                .AppendLine($"FileName: {movie.FileName}")
                 .AppendLine("---")
                 .AppendLine()
                 .AppendLine($"# {movie.Title}")
                 .AppendLine()
-                .AppendLine(Plot(apiData))
+                .AppendLine(ShowHelper.Plot(apiData))
                 .AppendLine()
-                .AppendLine(EmbedPoster(apiData.Poster));
+                .AppendLine(ShowHelper.EmbedPoster(apiData.Poster));
 
             return sb.ToString();
         }
 
         private static string Actors(
-            MovieService.Models.Movie apiData)
+            MovieService.Models.Show apiData)
         {
             if (apiData == null)
                 return string.Empty;
@@ -173,7 +174,7 @@ namespace ButlerCore.Jobs
         }
 
         private static string Genre(
-            MovieService.Models.Movie apiData)
+            MovieService.Models.Show apiData)
         {
             if (apiData == null)
                 return string.Empty;
@@ -183,38 +184,26 @@ namespace ButlerCore.Jobs
                 : apiData.Genre;
         }
 
-        private static string Plot(
-            MovieService.Models.Movie apiData)
-        {
-            if (apiData == null)
-                return string.Empty;
-
-            return string.IsNullOrEmpty(apiData.Plot)
-                ? string.Empty
-                : apiData.Plot;
-        }
-
-        private static string? EmbedPoster(string poster) =>
-        
-            string.IsNullOrEmpty(poster)
-                ? string.Empty
-                : $"![poster]({poster})";
        
 
-        public static Movie ParseMovie(string foldername)
+        public static Movie ParseMovie(FileInfo fileInfo)
         {
             var movie = new Movie();
             var match = Regex.Match(
-                input: foldername,
+                input: fileInfo.Name,
                 pattern: @"(.*)\s[\[\(](\d{4})[\]\)]");
 
             if (match.Success)
             {
                 movie.Title = match.Groups[1].Value.Trim();
                 movie.Year = match.Groups[2].Value;
+                movie.FileName = fileInfo.Name;
             }
             else
-                movie.Title = foldername;
+            {
+                movie.Title = fileInfo.Name;
+                movie.FileName = fileInfo.Name;
+            }
             return movie;
         }
 
@@ -371,7 +360,7 @@ namespace ButlerCore.Jobs
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
+                var movie = ParseMovie(fileInfo);
                 if (IsKeeper(movie))
                     continue;
                 if (!Watched(movie))
@@ -404,7 +393,7 @@ namespace ButlerCore.Jobs
             foreach (var file in fileEntries)
             {
                 var fileInfo = new FileInfo(file);
-                var movie = ParseMovie(fileInfo.Name);
+                var movie = ParseMovie(fileInfo);
                 var props = ReadProperties(movie.Title);
                 if (props.Count == 0)
                     list.Add(movie);
@@ -416,7 +405,7 @@ namespace ButlerCore.Jobs
             Movie movie, 
             MovieService.MovieService movieService)
         {
-            MovieService.Models.Movie apiData = null;
+            MovieService.Models.Show apiData = null;
 
             try
             {
@@ -434,7 +423,7 @@ namespace ButlerCore.Jobs
                 Console.WriteLine($"Error getting {movie} {ex.Message}");
             }
             var sb = new StringBuilder()
-                .AppendLine(EmbedPoster(apiData.Poster));
+                .AppendLine(ShowHelper.EmbedPoster(apiData.Poster));
 
             return sb.ToString();
         }
@@ -443,7 +432,7 @@ namespace ButlerCore.Jobs
             Movie movie, 
             MovieService.MovieService movieService)
         {
-            MovieService.Models.Movie apiData = null;
+            MovieService.Models.Show apiData = null;
 
             try
             {
@@ -461,7 +450,7 @@ namespace ButlerCore.Jobs
                 Console.WriteLine($"Error getting {movie} {ex.Message}");
             }
             var sb = new StringBuilder()
-                .AppendLine(Plot(apiData));
+                .AppendLine(ShowHelper.Plot(apiData));
 
             return sb.ToString();
         }
