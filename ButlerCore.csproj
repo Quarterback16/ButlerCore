@@ -31,22 +31,22 @@
 
   <ItemGroup>
     <Reference Include="EventStoreService">
-      <HintPath>D:\Dropbox\Services\EventStoreService.dll</HintPath>
+      <HintPath>..\..\..\Users\quart\Dropbox\Services\EventStoreService.dll</HintPath>
     </Reference>
     <Reference Include="HearthstoneReportService">
-      <HintPath>D:\Dropbox\Services\HearthstoneReportService.dll</HintPath>
+      <HintPath>..\..\..\Users\quart\Dropbox\Services\HearthstoneReportService.dll</HintPath>
     </Reference>
     <Reference Include="InjectorMicroService">
-      <HintPath>D:\Dropbox\Services\InjectorMicroService.dll</HintPath>
+      <HintPath>..\..\..\Users\quart\Dropbox\Services\InjectorMicroService.dll</HintPath>
     </Reference>
     <Reference Include="Knoware.HearthstoneApi">
-      <HintPath>D:\Dropbox\Services\Knoware.HearthstoneApi.dll</HintPath>
+      <HintPath>..\..\..\Users\quart\Dropbox\Services\Knoware.HearthstoneApi.dll</HintPath>
     </Reference>
     <Reference Include="MovieService">
-      <HintPath>D:\Dropbox\Services\MovieService.dll</HintPath>
+      <HintPath>..\..\..\Users\quart\Dropbox\Services\MovieService.dll</HintPath>
     </Reference>
     <Reference Include="TipItService">
-      <HintPath>D:\Dropbox\Services\TipItService.dll</HintPath>
+      <HintPath>..\..\..\Users\quart\Dropbox\Services\TipItService.dll</HintPath>
     </Reference>
   </ItemGroup>
 
