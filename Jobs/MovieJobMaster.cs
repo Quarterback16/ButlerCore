@@ -197,7 +197,7 @@ namespace ButlerCore.Jobs
             {
                 movie.Title = match.Groups[1].Value.Trim();
                 movie.Year = match.Groups[2].Value;
-                movie.FileName = fileInfo.Name;
+                movie.FileName = GetDirectoryFirstFile(fileInfo);
             }
             else
             {
@@ -205,6 +205,14 @@ namespace ButlerCore.Jobs
                 movie.FileName = fileInfo.Name;
             }
             return movie;
+        }
+
+        private static string GetDirectoryFirstFile(FileInfo fileInfo)
+        {
+            string[] files = Directory.GetFiles(fileInfo.FullName);
+            if (files.Length == 0)
+                return string.Empty;
+            return new FileInfo(files[0]).Name;
         }
 
         public bool WriteMovieMarkdown(
