@@ -71,6 +71,7 @@ namespace ButlerCore
                 nErrors += HearthstoneJobs(context);
                 nErrors += MovieJobs(context);
                 nErrors += TvJobs(context);
+                nErrors += BookJobs(context);
 
                 if (nErrors > 0)
                 {
@@ -411,6 +412,40 @@ namespace ButlerCore
 
         }
 
+        private static int BookJobs(
+            ButlerCoreContext settings)
+        {
+            try
+            {
+                LogMessage(settings.Logger, "BookJobs ...");
+                if (settings.ElsieBookFolders == null
+                    && settings.KatlaBookFolders == null)
+                {
+                    LogMessage(settings.Logger, "No Book Folders set");
+                    return 1;
+                }
+
+                var bjm = new BookJobMaster(
+                    settings.Logger,
+                    settings.ElsieBookFolders);
+
+                //  1. Detector always Detects   /////////////////////////////////////////////////////////
+                LogMessage(
+                    settings.Logger,
+                    "Detecting new Books");
+                bjm.DoDetectorJob();
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                LogMessage(
+                    settings.Logger,
+                    $"Exception {ex.Message}");
+                throw;
+            }
+        }
+
         private static int MovieJobs(
             ButlerCoreContext settings)
         {
@@ -465,7 +500,6 @@ namespace ButlerCore
                     $"Exception {ex.Message}");
                 throw;
             }
-
         }
 
         private static bool IsWeekend() =>

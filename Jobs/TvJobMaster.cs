@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace ButlerCore.Jobs
 {
-    public class TvJobMaster
+    public class TvJobMaster : JobMaster
     {
         private readonly string _tvMarkdownFolder;
         private readonly string _tvRootFolder;
@@ -335,15 +335,6 @@ namespace ButlerCore.Jobs
                 list.Add(Tv);
             }
             return list;
-        }
-
-        private void LogIt(string msg)
-        {
-#if DEBUG
-            Console.WriteLine(msg);
-#else
-            _logger.LogInformation(msg);
-#endif
         }
 
         public bool Watched(Tv Tv) =>

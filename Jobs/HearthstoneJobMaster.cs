@@ -3,11 +3,10 @@ using EventStoreService;
 using HearthstoneReportService;
 using InjectorMicroService;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace ButlerCore.Jobs
 {
-	public class HearthstoneJobMaster
+	public class HearthstoneJobMaster : JobMaster
 	{
 		private readonly ILogger _logger;
 
@@ -70,15 +69,6 @@ namespace ButlerCore.Jobs
 				markdown: md);
 			LogIt(md);
 			return md;
-		}
-
-		private void LogIt(string msg)
-		{
-#if DEBUG
-			Debug.WriteLine(msg);
-#else 
-			_logger.LogInformation(msg);
-#endif
 		}
 
 		private static string WrapWithPre(string report) =>

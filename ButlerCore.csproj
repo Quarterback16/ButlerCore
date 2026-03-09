@@ -31,25 +31,25 @@
 
   <ItemGroup>
     <Reference Include="BattleNetApi">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\BattleNetApi.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\BattleNetApi.dll</HintPath>
     </Reference>
     <Reference Include="EventStoreService">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\EventStoreService.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\EventStoreService.dll</HintPath>
     </Reference>
     <Reference Include="HearthstoneReportService">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\HearthstoneReportService.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\HearthstoneReportService.dll</HintPath>
     </Reference>
     <Reference Include="InjectorMicroService">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\InjectorMicroService.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\InjectorMicroService.dll</HintPath>
     </Reference>
     <Reference Include="Knoware.HearthstoneApi">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\Knoware.HearthstoneApi.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\Knoware.HearthstoneApi.dll</HintPath>
     </Reference>
     <Reference Include="MovieService">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\MovieService.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\MovieService.dll</HintPath>
     </Reference>
     <Reference Include="TipItService">
-      <HintPath>..\..\..\Users\quart\Dropbox\Services\TipItService.dll</HintPath>
+      <HintPath>..\..\..\Dropbox\Services\TipItService.dll</HintPath>
     </Reference>
   </ItemGroup>
 

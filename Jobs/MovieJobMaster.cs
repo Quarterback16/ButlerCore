@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace ButlerCore.Jobs
 {
-    public class MovieJobMaster
+    public class MovieJobMaster : JobMaster
     {
         private readonly string _movieMarkdownFolder;
         private readonly string _movieRootFolder;
@@ -376,15 +376,6 @@ namespace ButlerCore.Jobs
                 list.Add(movie);
             }
             return list;
-        }
-
-        private void LogIt(string msg)
-        {
-#if DEBUG
-            Console.WriteLine(msg);
-#else
-            _logger.LogInformation(msg);
-#endif
         }
 
         public bool Watched(Movie movie) =>

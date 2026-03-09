@@ -26,6 +26,9 @@ namespace ButlerCore
         public string? MovieRootFolder { get; set; }
         public string? TvRootFolder { get; set; }
         public string? HsEventFolder { get; set; }
+        public string? HostName{ get; set; }
+        public string[]? ElsieBookFolders { get; set; }
+        public string[]? KatlaBookFolders { get; set; }
     }
 
     public class ConnectionStrings
