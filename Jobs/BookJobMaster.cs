@@ -12,7 +12,7 @@ namespace ButlerCore.Jobs
             ILogger logger,
             string dropBoxFolder,
             string[] bookFolders)
-            : base(logger)  // <-- base constructor call here
+            : base(logger,dropBoxFolder)  // <-- base constructor call here
         {
             BookFolders = bookFolders ?? throw new ArgumentNullException(
                 nameof(bookFolders));
@@ -31,11 +31,20 @@ namespace ButlerCore.Jobs
                 var md = MarkdownHelper.GenerateBookTable(
                     books);
                 var targetFile = $"{CurrentMonth()}.md";
-                MdInjector?.InjectMarkdown(
-                    targetfile: targetFile,
-                    tagName: "new-books",
-                    markdown: md);
-                LogIt(md);
+                LogIt($"TargetFile is {MdInjector?.FullPathTargetFile(targetFile)}");
+                if (MdInjector is not null 
+                    && MdInjector.TargetFileExists(targetFile))
+                {
+                    MdInjector?.InjectMarkdown(
+                        targetfile: targetFile,
+                        tagName: "new-books",
+                        markdown: md);
+                    LogIt(md);
+                }
+                else
+                {
+                    LogIt($"{MdInjector?.FullPathTargetFile(targetFile)} does not exist");
+                }
             }
             return books;
         }
@@ -59,7 +68,7 @@ namespace ButlerCore.Jobs
             LogIt($"{newBookFiles.Count} new books detected tra {FormatDate(startDate)} and {FormatDate(endDate)}");
             if (newBookFiles.Any())
             {
-                int maxTopicLength = newBookFiles.Max(b => b.Topic.Length);
+                int maxTopicLength = newBookFiles.Max(b => (b.Topic ?? string.Empty).Length);
                 newBookFiles.ForEach(b =>
                     LogIt(
                         $"{b.AccessDate}: {TopicName(b, maxTopicLength)} : {b.Title}"));
@@ -72,7 +81,7 @@ namespace ButlerCore.Jobs
             int maxTopicLength)
         {
             var sb = new StringBuilder();
-            sb.Append(b.Topic.PadRight(maxTopicLength));
+            sb.Append(b.Topic?.PadRight(maxTopicLength));
             return sb.ToString();
         }
 

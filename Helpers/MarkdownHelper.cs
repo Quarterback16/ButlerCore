@@ -9,8 +9,7 @@ namespace ButlerCore.Helpers
             List<Book> books)
         {
             var page = new WikiPageWithTable();
-            page.AddHeading("New Books this month", 2);
-            page.AddBlankLine();
+            page.AddHeading("New Books this month", 3);
             page.Table.AddColumn("Topic");
             page.Table.AddColumn("Book");
             page.Table.AddColumn("when");
@@ -25,6 +24,7 @@ namespace ButlerCore.Helpers
                 page.Table.AddCell(nRow, "when", book.AccessDate ?? string.Empty);
                 page.Table.AddCell(nRow, "format", book.Format ?? string.Empty);
             }
+            page.AddBlankLine();
             return page.PageTableContents();
         }
     }
