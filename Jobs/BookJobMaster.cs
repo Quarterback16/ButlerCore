@@ -1,4 +1,5 @@
-﻿using ButlerCore.Models;
+﻿using ButlerCore.Helpers;
+using ButlerCore.Models;
 using Microsoft.Extensions.Logging;
 using System.Text;
 
@@ -9,17 +10,42 @@ namespace ButlerCore.Jobs
         public string[] BookFolders { get; set; }
         public BookJobMaster(
             ILogger logger,
+            string dropBoxFolder,
             string[] bookFolders)
+            : base(logger)  // <-- base constructor call here
         {
             BookFolders = bookFolders ?? throw new ArgumentNullException(
                 nameof(bookFolders));
         }
 
-        public int DoDetectorJob(
+        public List<Book> DoDetectorJob(
             int nMonthsBack = 1)
         {
-            var newBookFiles = new List<Book>();
             (DateTime startDate, DateTime endDate) = GetDateRange(nMonthsBack);
+            var books = DetectByRange(
+                startDate,
+                endDate);
+
+            if (books.Any() && nMonthsBack.Equals(0))
+            {
+                var md = MarkdownHelper.GenerateBookTable(
+                    books);
+                var targetFile = $"{CurrentMonth()}.md";
+                MdInjector?.InjectMarkdown(
+                    targetfile: targetFile,
+                    tagName: "new-books",
+                    markdown: md);
+                LogIt(md);
+            }
+            return books;
+        }
+
+
+        public List<Book> DetectByRange(
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var newBookFiles = new List<Book>();
 
             foreach (var bookFolder in BookFolders)
             {
@@ -31,11 +57,14 @@ namespace ButlerCore.Jobs
             }
 
             LogIt($"{newBookFiles.Count} new books detected tra {FormatDate(startDate)} and {FormatDate(endDate)}");
-            int maxTopicLength = newBookFiles.Max(b => b.Topic.Length);
-            newBookFiles.ForEach(b =>
-                LogIt(
-                    $"{b.AccessDate}: {TopicName(b,maxTopicLength)} : {b.Title}"));
-            return 0;
+            if (newBookFiles.Any())
+            {
+                int maxTopicLength = newBookFiles.Max(b => b.Topic.Length);
+                newBookFiles.ForEach(b =>
+                    LogIt(
+                        $"{b.AccessDate}: {TopicName(b, maxTopicLength)} : {b.Title}"));
+            }
+            return newBookFiles;
         }
 
         private static string TopicName(

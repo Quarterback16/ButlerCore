@@ -1,4 +1,4 @@
-{
+﻿{
   "hs-api-key": "a789480a9cmsh6b5b0c991c9d382p12afb5jsn2f5c11c53482",
   "Settings": {
     "ConnectionStrings": {
@@ -15,7 +15,7 @@
       "Object reference not set to an instance of an object."
     ],
     "ConnectTo": "Prod",
-    "TippingSeason": 2026,
+    "TippingSeason": 2025,
     "StartDateTime": "2024-03-07 00:10",
     "Frequency": 60,
     "Beep": true,

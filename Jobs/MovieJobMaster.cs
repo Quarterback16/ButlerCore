@@ -11,16 +11,14 @@ namespace ButlerCore.Jobs
     {
         private readonly string _movieMarkdownFolder;
         private readonly string _movieRootFolder;
-#if !DEBUG
-        private readonly ILogger _logger;
-#endif
+
         public MovieJobMaster(
             ILogger logger,
             string dropBoxFolder,
             string movieRootFolder = "m:\\")
+            : base(logger)  // <-- base constructor call here
         {
 #if !DEBUG
-            _logger = logger;
             LogIt("Instantiating MovieJobMaster");
 #endif
             _movieMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\movies\\";
@@ -113,7 +111,7 @@ namespace ButlerCore.Jobs
             File.Exists(MarkdownFileName(moveTitle));
         
 
-        public static string? MovieToMarkdown(
+        public string? MovieToMarkdown(
             Movie movie,
             IMovieService movieService)
         {
@@ -132,7 +130,7 @@ namespace ButlerCore.Jobs
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting {movie} {ex.Message}");
+                LogError($"Error getting {movie} {ex.Message}");
             }
             var theWhen = DateTime.Now.ToString("yyyy-MM-dd");
             var sb = new StringBuilder()

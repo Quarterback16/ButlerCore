@@ -2,32 +2,42 @@
 
 namespace ButlerCore
 {
-    public class CustomFileLoggerProvider(StreamWriter logFileWriter) : ILoggerProvider
+    public sealed class CustomFileLoggerProvider : ILoggerProvider
     {
-        private readonly StreamWriter _logFileWriter = logFileWriter
-            ?? throw new ArgumentNullException(nameof(logFileWriter));
+        private StreamWriter? _logFileWriter;
+        private bool _disposed;
 
-        public ILogger CreateLogger(string categoryName)
+        public CustomFileLoggerProvider(StreamWriter logFileWriter)
         {
-            return new CustomFileLogger(
-                categoryName,
-                _logFileWriter);
+            _logFileWriter = logFileWriter
+                ?? throw new ArgumentNullException(nameof(logFileWriter));
         }
 
-        public void Dispose() => _logFileWriter.Dispose();
+        public ILogger CreateLogger(string categoryName)
+            => new CustomFileLogger(categoryName, _logFileWriter!);
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+
+            _logFileWriter?.Flush();
+            _logFileWriter?.Dispose();
+            _logFileWriter = null;
+            GC.SuppressFinalize(this);
+        }
     }
+
 
     // Customized ILogger, writes logs to text files
     public class CustomFileLogger : ILogger
     {
-        private readonly string _categoryName;
         private readonly StreamWriter _logFileWriter;
 
         public CustomFileLogger(
             string categoryName,
             StreamWriter logFileWriter)
         {
-            _categoryName = categoryName;
             _logFileWriter = logFileWriter;
         }
 

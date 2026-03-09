@@ -12,19 +12,15 @@ namespace ButlerCore.Jobs
     {
         private readonly string _tvMarkdownFolder;
         private readonly string _tvRootFolder;
-#if !DEBUG
-        private readonly ILogger _logger;
-#endif
+
         public TvJobMaster(
             ILogger logger,
             string dropBoxFolder,
             string tvRootFolder = "t:\\")
+            : base(logger)  // <-- base constructor call here
         {
             _tvMarkdownFolder = $"{dropBoxFolder}Obsidian\\ChestOfNotes\\tv\\";
             _tvRootFolder = tvRootFolder;
-#if !DEBUG
-            _logger = logger;
-#endif
         }
 
         public int DoDetectorJob()
@@ -41,7 +37,7 @@ namespace ButlerCore.Jobs
                 if (IsMarkdownFor(Tv.Title))
                     continue;
 
-                WriteTvMarkdown(Tv);
+                _ = WriteTvMarkdown(Tv);
                 LogIt($"Markdown created for {Tv}");
                 Console.WriteLine($"Markdown created for {Tv}");
             }
@@ -116,11 +112,11 @@ namespace ButlerCore.Jobs
             return File.Exists(mdFile);
         }
 
-        public async Task<string?> TvToMarkdown(
+        public static async Task<string?> TvToMarkdown(
             Tv tv,
             IMovieService tvService)
         {
-            Show apiData = null;
+            Show? apiData = null;
 
             try
             {
@@ -150,7 +146,7 @@ namespace ButlerCore.Jobs
                 .AppendLine()
                 .AppendLine(ShowHelper.Plot(apiData))
                 .AppendLine()
-                .AppendLine(ShowHelper.EmbedPoster(apiData.Poster));
+                .AppendLine(ShowHelper.EmbedPoster(apiData?.Poster));
 
             return sb.ToString();
         }
@@ -254,45 +250,73 @@ namespace ButlerCore.Jobs
 
         public List<MediaTag> ReadTags(string title)
         {
-            var tags = new List<MediaTag>();
             var fileName = MarkdownFileName(title);
-            string[] lines = File.ReadAllLines(fileName);
-            var startTags = false;
+            var lines = File.ReadAllLines(fileName);
+
+            return ReadInlineTags(lines) ?? ReadBlockTags(lines);
+        }
+
+        private static List<MediaTag>? ReadInlineTags(IEnumerable<string> lines)
+        {
             foreach (var line in lines)
             {
-                if (startTags)
+                if (!line.StartsWith("tags:", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (!line.Contains("[") || !line.Contains("]"))
+                    return null;
+
+                var tagString = ExtractBetween(line, "[", "]");
+                var tagArray = tagString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                return tagArray
+                    .Select(item => new MediaTag(item))
+                    .ToList();
+            }
+
+            return null;
+        }
+
+        private static List<MediaTag> ReadBlockTags(IEnumerable<string> lines)
+        {
+            var tags = new List<MediaTag>();
+            var startTags = false;
+
+            foreach (var line in lines)
+            {
+                if (!startTags)
                 {
-                    var tag = LineToTag(line);
-                    if (tag.Value != null)
+                    if (line.StartsWith("tags:", StringComparison.OrdinalIgnoreCase))
                     {
-                        tags.Add(tag);
+                        startTags = true;
                     }
-                }
-                if (line.StartsWith("tags:") && !startTags)
-                {
-                    if (line.Contains("[") && line.Contains("]"))
-                    {
-                        var tagString = line.Substring(
-                            line.IndexOf("[") + 1,
-                            line.IndexOf("]") - line.IndexOf("[") - 1);
-                        var tagArray = tagString.Split(',');
-                        foreach (var item in tagArray)
-                        {
-                            tags.Add(new MediaTag(item));
-                        }
-                        break;
-                    }
-                    startTags = true;
                     continue;
                 }
-                if (line.StartsWith("---") && startTags)
-                {
+
+                if (line.StartsWith("---"))
                     break;
-                }
+
+                var tag = LineToTag(line);
+                if (tag?.Value != null)
+                    tags.Add(tag);
             }
+
             return tags;
         }
-        private MediaTag LineToTag(string line)
+
+        private static string ExtractBetween(string text, string start, string end)
+        {
+            var startIndex = text.IndexOf(start, StringComparison.Ordinal);
+            if (startIndex < 0) return string.Empty;
+
+            startIndex += start.Length;
+            var endIndex = text.IndexOf(end, startIndex, StringComparison.Ordinal);
+            if (endIndex < 0) return string.Empty;
+
+            return text.Substring(startIndex, endIndex - startIndex);
+        }
+
+        private static MediaTag LineToTag(string line)
         {
             if (line.StartsWith("  - "))
                 return new MediaTag(line.Substring(4));

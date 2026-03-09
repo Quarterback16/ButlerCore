@@ -1,13 +1,15 @@
-﻿using LanguageExt;
-using static LanguageExt.Prelude;
-using static System.Console;
+﻿using ButlerCore.Helpers;
+using ButlerCore.Jobs;
+using InjectorMicroService;
+using LanguageExt;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Configuration;
-using InjectorMicroService;
+using System.Globalization;
 using TipItService.Helpers;
-using ButlerCore.Jobs;
 using TipItService.Interfaces;
+using static LanguageExt.Prelude;
+using static System.Console;
 
 namespace ButlerCore
 {
@@ -24,6 +26,8 @@ namespace ButlerCore
                     Some: s => DoTheChores(s),
                     None: () => None);
         }
+
+        private static readonly CultureInfo AuCulture = new("en-AU");
 
         private static Option<ButlerCoreContext> SetupLogging(
             ButlerCoreContext context)
@@ -110,12 +114,15 @@ namespace ButlerCore
                     ? (DateTime.Now - context.StartDateTime).Value.TotalDays.ToString("F1")
                     : "Missing StartDateTime";
 
-        private static TimeSpan ToTimeOfDay(
-            string? knockOffTime) =>
-
-                (knockOffTime == null)
-                    ? TimeSpan.Zero
-                    : DateTime.Parse(knockOffTime).TimeOfDay;
+        private static TimeSpan ToTimeOfDay(string? knockOffTime) =>
+            knockOffTime is null
+                ? TimeSpan.Zero
+                : DateTime.ParseExact(
+                      knockOffTime,
+                      "h:mm tt",          // matches e.g. "4:30 pm"
+                      AuCulture,
+                      DateTimeStyles.None
+                  ).TimeOfDay;           
 
 
         private static string SelectConnectionString(
@@ -425,11 +432,23 @@ namespace ButlerCore
                     return 1;
                 }
 
+                if (settings.DropBoxFolder == null)
+                {
+                    LogMessage(settings.Logger, "No Dropbox Folder set");
+                    return 1;
+                }
+
+                if (settings.Logger == null)
+                {
+                    Console.WriteLine("No Logger set");
+                    return 1;
+                }
+
                 var bjm = new BookJobMaster(
                     settings.Logger,
+                    settings.DropBoxFolder,
                     settings.ElsieBookFolders);
 
-                //  1. Detector always Detects   /////////////////////////////////////////////////////////
                 LogMessage(
                     settings.Logger,
                     "Detecting new Books");

@@ -2,8 +2,8 @@
 {
     public class Tv
     {
-        public string Title { get; set; }
-        public string Year { get; set; }
+        public string? Title { get; set; }
+        public string? Year { get; set; }
 
         public Tv()
         {
@@ -17,6 +17,6 @@
             Year = year;
         }
 
-        public override string ToString() => Title;
+        public override string ToString() => Title is null ? "null" : Title;
     }
 }

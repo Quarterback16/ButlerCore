@@ -1,28 +1,25 @@
 ﻿using BattleNetApi.Service;
 using EventStoreService;
 using HearthstoneReportService;
-using InjectorMicroService;
 using Microsoft.Extensions.Logging;
 
 namespace ButlerCore.Jobs
 {
 	public class HearthstoneJobMaster : JobMaster
 	{
-		private readonly ILogger _logger;
+		private readonly HsReportService? _hrs;
 
-		private readonly HsReportService _hrs;
-		private readonly IMarkdownInjector _mdInjector;
 		public string? CurrentMeta { get; set; }
-		public string ObsidianHeartstoneMetasFolder { get; set; }
+		public string? ObsidianHeartstoneMetasFolder { get; set; }
 
 		public HearthstoneJobMaster(
 			ILogger logger,
 			string dropBoxFolder,
 			string hsEventFolder)
+			: base(logger, dropBoxFolder)  // <-- base constructor call here
 		{
 			try
 			{
-				_logger = logger;
 				LogIt($"Events loaded from : {hsEventFolder}");
 				_hrs = new HsReportService(
 					new HsEventStore(
@@ -34,13 +31,10 @@ namespace ButlerCore.Jobs
 				var hcs = new HearthstoneCardService();
 				CurrentMeta = hcs.GetCurrentMeta();
 				LogIt($"Current Meta is : {CurrentMeta}");
-				_mdInjector = new MarkdownInjector(
-					$"{dropBoxFolder}Obsidian\\ChestOfNotes\\");
-				LogIt("md injector initialisd");
 			}
 			catch (Exception ex)
 			{
-				_logger?.LogError( ex.Message );
+				LogError( ex.Message );
 				Console.WriteLine(ex.Message);
 			}
 		}
@@ -50,7 +44,7 @@ namespace ButlerCore.Jobs
 			var targetFile = $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md";
 			LogIt($"DoChampDeckReport...>> {targetFile}");
 			var md = WrapWithPre(_hrs.ChampDeckReport());
-			_mdInjector.InjectMarkdown(
+			MdInjector?.InjectMarkdown(
 				targetfile: targetFile,
 				tagName: "champdeck",
 				markdown: md);
@@ -63,7 +57,7 @@ namespace ButlerCore.Jobs
 			var targetFile = $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md";
 			LogIt($"DoMetaChampReport...>> {targetFile}");
 			var md = WrapWithPre(_hrs.MetaChampReport());
-			_mdInjector.InjectMarkdown(
+			MdInjector?.InjectMarkdown(
 				targetfile: targetFile,
 				tagName: "metachamp",
 				markdown: md);
@@ -81,7 +75,7 @@ namespace ButlerCore.Jobs
 			var targetFile = $"{ObsidianHeartstoneMetasFolder}{CurrentMeta}.md";
 			LogIt($"DoWinLossGraph...>> {targetFile}");
 			var md = WrapWithPre(_hrs.WinLossGraph(DateTime.Now));
-			_mdInjector.InjectMarkdown(
+			MdInjector?.InjectMarkdown(
 				targetfile: targetFile,
 				tagName: "win-loss",
 				markdown: md);
