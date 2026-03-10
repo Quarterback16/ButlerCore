@@ -34,23 +34,31 @@ namespace ButlerCore.Jobs
         public int DoDetectorJob(
             IMovieService movieService)
         {
-            var newMovies = 0;
-            var list = GetMovieList();
-            if (list == null)
-            { 
-                LogIt("Failed to get Movie list");
+            try
+            {
+                var newMovies = 0;
+                var list = GetMovieList();
+                if (list == null)
+                {
+                    LogIt("Failed to get Movie list");
+                    return 1;
+                }
+                foreach (var movie in list)
+                {
+                    if (IsMarkdownFor(movie.Title))
+                        continue;
+
+                    WriteMovieMarkdown(movie, movieService);
+                    LogIt($"Markdown created for {movie}");
+                    newMovies++;
+                }
+                LogIt($"{newMovies} new movies detected");
+            }
+            catch (Exception ex)
+            {
+                LogIt($"Error in Movie Detector Job: {ex.Message}");
                 return 1;
             }
-            foreach (var movie in list) 
-            {
-                if (IsMarkdownFor(movie.Title))
-                    continue;
-
-                WriteMovieMarkdown(movie,movieService);
-                LogIt($"Markdown created for {movie}");
-                newMovies++;
-            }
-            LogIt($"{newMovies} new movies detected");
             return 0;
         }
 
