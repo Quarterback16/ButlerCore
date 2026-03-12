@@ -85,7 +85,7 @@ namespace ButlerCore.Jobs
             return sb.ToString();
         }
 
-        public static List<Book> IdentifyNewBooks(
+        public List<Book> IdentifyNewBooks(
             string bookRootFolder,
             DateTime startDate,
             DateTime endDate)
@@ -101,6 +101,8 @@ namespace ButlerCore.Jobs
                 if (ExtensionSaysBook(fileInfo.Extension))
                     list.Add(fileInfo);
             }
+            LogIt($"Found {list.Count} book files in {bookRootFolder}");
+
             var recentBooks = list
                 .Where(
                     b => b.LastWriteTime <= endDate

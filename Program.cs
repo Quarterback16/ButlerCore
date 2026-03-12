@@ -1,5 +1,4 @@
-﻿using ButlerCore.Helpers;
-using ButlerCore.Jobs;
+﻿using ButlerCore.Jobs;
 using InjectorMicroService;
 using LanguageExt;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +12,7 @@ using static System.Console;
 
 namespace ButlerCore
 {
-    internal partial class Program
+    public partial class Program
     {
         public ILogger? Logger { get; set; }
 
@@ -419,7 +418,7 @@ namespace ButlerCore
 
         }
 
-        private static int BookJobs(
+        public static int BookJobs(
             ButlerCoreContext settings)
         {
             try
@@ -444,15 +443,25 @@ namespace ButlerCore
                     return 1;
                 }
 
+                var bookFolders = BookFolders(settings);
+                if (bookFolders == null)
+                {
+                    LogMessage(
+                        settings.Logger, 
+                        "No Book Folders found for this host");
+                    return 1;
+                }
+
                 var bjm = new BookJobMaster(
                     settings.Logger,
                     settings.DropBoxFolder,
-                    settings.ElsieBookFolders);
+                    bookFolders);
 
                 LogMessage(
                     settings.Logger,
                     "Detecting new Books");
-                bjm.DoDetectorJob();
+
+                bjm.DoDetectorJob(nMonthsBack: 0);
 
                 return 0;
             }
@@ -464,6 +473,16 @@ namespace ButlerCore
                 throw;
             }
         }
+
+        private static string[]? BookFolders(
+            ButlerCoreContext settings) =>
+        
+            settings.HostName?.ToLowerInvariant() switch
+            {
+                "elsie" => settings.ElsieBookFolders,
+                "katla" => settings.KatlaBookFolders,
+                _ => null
+            };
 
         private static int MovieJobs(
             ButlerCoreContext settings)

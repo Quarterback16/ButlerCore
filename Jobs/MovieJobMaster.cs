@@ -1,5 +1,6 @@
 ﻿using ButlerCore.Helpers;
 using ButlerCore.Models;
+using LanguageExt;
 using Microsoft.Extensions.Logging;
 using MovieService;
 using System.Text;
@@ -68,6 +69,7 @@ namespace ButlerCore.Jobs
                 _movieRootFolder,
                 "*.*");
             var showCount = fileEntries.Count();
+            LogIt($"There are {showCount} movies");
             var keeperCount = 0;
             var unwatchedCount = 0;
             var cullCount = 0;
