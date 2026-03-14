@@ -297,7 +297,7 @@ namespace ButlerCore
                 LogMessage(
                     settings.Logger,
                     $"Exception {ex.Message}");
-                throw;
+                return 1;
             }
         }
 
@@ -361,7 +361,7 @@ namespace ButlerCore
                 ErrorMessage(
                     settings.Logger,
                     $"Exception {ex.Message}");
-                throw;
+                return 1;
             }
         }
 
@@ -413,7 +413,7 @@ namespace ButlerCore
                 LogMessage(
                     settings.Logger,
                     $"Exception {ex.Message}");
-                throw;
+                return 1;
             }
 
         }
@@ -470,7 +470,7 @@ namespace ButlerCore
                 LogMessage(
                     settings.Logger,
                     $"Exception {ex.Message}");
-                throw;
+                return 1;
             }
         }
 
