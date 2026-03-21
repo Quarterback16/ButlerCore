@@ -212,7 +212,7 @@ namespace ButlerCore
                 string.Join(", ", settings));
         }
 
-        private static int TipitJob(
+        public static int TipitJob(
             ButlerCoreContext settings)
         {
             try
