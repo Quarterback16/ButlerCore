@@ -297,6 +297,9 @@ namespace ButlerCore
                 LogMessage(
                     settings.Logger,
                     $"Exception {ex.Message}");
+#if DEBUG
+                Console.WriteLine(ex.Message);
+#endif
                 return 1;
             }
         }
