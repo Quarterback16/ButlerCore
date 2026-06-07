@@ -276,6 +276,15 @@ namespace ButlerCore
                     "easiest",
                     md);
                 LogMessage(settings.Logger, md);
+                LogMessage(
+                    settings.Logger,
+                    $@"Injecting Marco Report into {DashboardUtils.DashboardFile(season)}");
+                md = ts.MarcoReport();
+                mi.InjectMarkdown(
+                    DashboardUtils.DashboardFile(season),
+                    "marco",
+                    md);
+                LogMessage(settings.Logger, md);
 
                 //  4.  Inject Rankings  //////////////////////////////////////////////////////
                 if (!IsWeekend())
